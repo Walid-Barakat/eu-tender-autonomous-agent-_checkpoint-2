@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>From Dial-Up to Decision</title>
+<style>
+  @font-face { font-family: "Cinzel"; src: url("fonts/cinzel-latin-400-normal.woff2") format("woff2"); font-weight: 400; }
+  @font-face { font-family: "Cinzel"; src: url("fonts/cinzel-latin-700-normal.woff2") format("woff2"); font-weight: 700; }
+  @font-face { font-family: "Oswald"; src: url("fonts/oswald-latin-400-normal.woff2") format("woff2"); font-weight: 400; }
+  @font-face { font-family: "Oswald"; src: url("fonts/oswald-latin-600-normal.woff2") format("woff2"); font-weight: 600; }
+  @font-face { font-family: "Inter"; src: url("fonts/inter-latin-400-normal.woff2") format("woff2"); font-weight: 400; }
+  @font-face { font-family: "Inter"; src: url("fonts/inter-latin-600-normal.woff2") format("woff2"); font-weight: 600; }
+  html, body { margin: 0; height: 100%; background: #000; }
+  body { display: grid; place-items: center; overflow: hidden; }
+  canvas { width: 100vw; height: 56.25vw; max-height: 100vh; max-width: 177.78vh; background: #000; }
+  #play { position: fixed; inset: 0; margin: auto; width: 220px; height: 64px; border: 1px solid #c9b48a; background: rgba(0,0,0,.6); color: #f3ead8; font: 600 18px "Inter", sans-serif; letter-spacing: .12em; text-transform: uppercase; cursor: pointer; border-radius: 4px; }
+  #play[hidden] { display: none; }
+</style>
+</head>
+<body>
+<canvas id="c" width="1920" height="1080"></canvas>
+<button id="play" type="button">▶ Play film</button>
+<audio id="score" src="soundtrack.m4a" preload="auto"></audio>
+<script>
+(async function () {
+  "use strict";
+  const TL = await fetch("timeline.json").then(r => r.json()).catch(() => window.TIMELINE);
+  const W = TL.width, H = TL.height, BAR = 112;
+  const cv = document.getElementById("c"), ctx = cv.getContext("2d");
+  await document.fonts.load('700 80px "Cinzel"'); await document.fonts.load('400 40px "Cinzel"');
+  await document.fonts.load('600 40px "Oswald"'); await document.fonts.load('400 40px "Inter"'); await document.fonts.load('600 40px "Inter"');
+
+  // ---------- assets
+  const load = src => new Promise((ok, no) => { const im = new Image(); im.onload = () => ok(im); im.onerror = no; im.src = "src/" + src; });
+  const imgs = {};
+  for (const s of TL.scenes) if (s.img && !imgs[s.img]) imgs[s.img] = await load(s.img);
+  const mk = (w, h) => { const c = document.createElement("canvas"); c.width = w; c.height = h; return c; };
+  const bgs = {};
+  for (const [k, im] of Object.entries(imgs)) {          // blurred, darkened backdrop for non-16:9 images
+    const c = mk(W, H), x = c.getContext("2d");
+    const s = Math.max(W / im.width, H / im.height) * 1.15;
+    x.filter = "blur(40px) brightness(.38) saturate(1.2)";
+    x.drawImage(im, (W - im.width * s) / 2, (H - im.height * s) / 2, im.width * s, im.height * s);
+    bgs[k] = c;
+  }
+  const vignette = mk(W, H); { const x = vignette.getContext("2d"); const g = x.createRadialGradient(W / 2, H / 2, H * 0.35, W / 2, H / 2, H * 0.95); g.addColorStop(0, "rgba(0,0,0,0)"); g.addColorStop(1, "rgba(0,0,0,.78)"); x.fillStyle = g; x.fillRect(0, 0, W, H); }
+  const grains = [];
+  for (let n = 0; n < 6; n++) { const c = mk(480, 270), x = c.getContext("2d"), d = x.createImageData(480, 270); let seed = 1337 + n * 977;
+    for (let i = 0; i < d.data.length; i += 4) { seed = (seed * 16807) % 2147483647; const v = seed % 255; d.data[i] = d.data[i + 1] = d.data[i + 2] = v; d.data[i + 3] = 22; }
+    x.putImageData(d, 0, 0); grains.push(c); }
+
+  // ---------- helpers
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const ease = p => p < .5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2;
+  const fadeIO = (t, a, b, f = .45) => clamp(Math.min((t - a) / f, (b - t) / f), 0, 1);
+  const GRADE = {
+    none: "none", night: "brightness(.92) contrast(1.05)",
+    sepia: "grayscale(1) sepia(.75) contrast(1.15) brightness(.9)",
+    fade: "sepia(.35) saturate(.7) contrast(1.05)", muted: "saturate(.55) contrast(1.05) brightness(.95)",
+    dark: "brightness(.82) contrast(1.12) saturate(.85)", cool: "saturate(1.1) contrast(1.06) hue-rotate(-6deg)",
+  };
+  function drawImageScene(s, t, alpha) {
+    const im = imgs[s.img], p = ease(clamp((t - s.start) / (s.end - s.start), 0, 1));
+    const [s0, x0, y0, s1, x1, y1] = s.kb || [1, 0, 0, 1, 0, 0];
+    const sc = s0 + (s1 - s0) * p, ox = (x0 + (x1 - x0) * p) * W, oy = (y0 + (y1 - y0) * p) * H;
+    ctx.save(); ctx.globalAlpha = alpha;
+    let flick = 1;
+    if (s.grade === "sepia") { const f = Math.floor(t * 25); flick = 0.9 + 0.1 * ((Math.sin(f * 12.9898) * 43758.5453) % 1 + 1) % 1; }
+    ctx.filter = (GRADE[s.grade] || "none") + (flick !== 1 ? ` brightness(${flick.toFixed(3)})` : "");
+    const ar = im.width / im.height;
+    if (s.fit === "pan") {           // tall image: fixed width, vertical pan between two focus points
+      const k = (W * (s.panWidth || 0.6)) / im.width * sc, h = im.height * k;
+      const fy = s.focus[0] + (s.focus[1] - s.focus[0]) * p;
+      ctx.drawImage(bgs[s.img], 0, 0);
+      ctx.shadowColor = "rgba(0,0,0,.6)"; ctx.shadowBlur = 40;
+      ctx.drawImage(im, W / 2 - im.width * k / 2 + ox, H / 2 - h * fy, im.width * k, h);
+    } else if (s.fit === "cover") {
+      const k = Math.max(W / im.width, (H - 2 * BAR) / im.height) * sc;
+      ctx.drawImage(im, W / 2 - im.width * k / 2 + ox, H / 2 - im.height * k / 2 + oy, im.width * k, im.height * k);
+    } else {
+      ctx.drawImage(bgs[s.img], 0, 0);
+      const maxW = W * 0.86, maxH = (H - 2 * BAR) * 0.94;
+      const k = Math.min(maxW / im.width, maxH / im.height) * sc;
+      ctx.shadowColor = "rgba(0,0,0,.6)"; ctx.shadowBlur = 40;
+      ctx.drawImage(im, W / 2 - im.width * k / 2 + ox, H / 2 - im.height * k / 2 + oy, im.width * k, im.height * k);
+    }
+    ctx.restore();
+  }
+  function text(str, x, y, font, color, alpha, opts = {}) {
+    ctx.save(); ctx.globalAlpha = alpha; ctx.font = font; ctx.fillStyle = color; ctx.textAlign = opts.align || "center"; ctx.textBaseline = "middle";
+    if (opts.tracking) ctx.letterSpacing = opts.tracking + "px";
+    if (opts.glow) { ctx.shadowColor = opts.glow; ctx.shadowBlur = 30; }
+    ctx.fillText(str, x, y); ctx.restore();
+  }
+  function wrap(str, font, maxW) {
+    ctx.font = font; const words = str.split(" "), lines = []; let line = "";
+    for (const w of words) { const test = line ? line + " " + w : w; if (ctx.measureText(test).width > maxW && line) { lines.push(line); line = w; } else line = test; }
+    lines.push(line); return lines;
+  }
+  function drawCard(s, t) {
+    const c = s.card, a = fadeIO(t, s.start, s.end, .6);
+    ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H);
+    if (c.style === "whisper") text(c.lines[0], W / 2, H / 2, 'italic 400 46px "Cinzel"', "#d9cfbd", a * fadeIO(t, s.start + .3, s.end, 1.0), { tracking: 4 });
+    if (c.style === "year") {
+      ctx.save(); ctx.globalAlpha = .35 * a; ctx.drawImage(grains[Math.floor(t * 25) % 6], 0, 0, W, H); ctx.restore();
+      text(c.lines[0], W / 2, H / 2 - 20, '700 190px "Cinzel"', "#e8d6a8", a, { tracking: 24, glow: "rgba(232,214,168,.35)" });
+      text(c.sub, W / 2, H / 2 + 120, 'italic 400 40px "Cinzel"', "#cbb98f", a * fadeIO(t, s.start + .6, s.end, .6), { tracking: 3 });
+    }
+    if (c.style === "beats") {
+      for (const [a0, a1, line] of c.beats) {
+        const al = fadeIO(t, a0, a1, .45); if (al <= 0) continue;
+        const ls = wrap(line, '600 64px "Oswald"', W * 0.72);
+        ls.forEach((l, i) => text(l.toUpperCase(), W / 2, H / 2 + (i - (ls.length - 1) / 2) * 84, '600 64px "Oswald"', "#f2f2f2", al, { tracking: 6 }));
+      }
+    }
+    if (c.style === "title") {
+      const p = clamp((t - s.start) / 1.6, 0, 1);
+      const g = ctx.createRadialGradient(W / 2, H / 2, 10, W / 2, H / 2, W * .6); g.addColorStop(0, `rgba(30,110,170,${.35 * a})`); g.addColorStop(1, "rgba(0,0,0,0)");
+      ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+      const track = 40 - 22 * ease(p);
+      text(c.lines[0], W / 2, H / 2 - 95, '700 128px "Cinzel"', "#f4ecd8", a * p, { tracking: track, glow: "rgba(120,190,255,.45)" });
+      text(c.lines[1], W / 2, H / 2 + 45, '700 128px "Cinzel"', "#f4ecd8", a * p, { tracking: track, glow: "rgba(120,190,255,.45)" });
+      text(c.sub, W / 2, H / 2 + 175, '400 40px "Inter"', "#bcd7ee", a * fadeIO(t, s.start + 1.4, s.end, .6), { tracking: 6 });
+    }
+    if (c.style === "credits") {
+      let fs = 88; ctx.font = `700 ${fs}px "Cinzel"`; ctx.letterSpacing = "8px";
+      while (ctx.measureText(c.lines[0]).width > W * 0.86 && fs > 40) { fs -= 2; ctx.font = `700 ${fs}px "Cinzel"`; }
+      ctx.letterSpacing = "0px";
+      text(c.lines[0], W / 2, H / 2 - 150, `700 ${fs}px "Cinzel"`, "#f4ecd8", a, { tracking: 8, glow: "rgba(120,190,255,.35)" });
+      wrap(c.sub, '400 42px "Inter"', W * 0.92).forEach((l, i) => text(l, W / 2, H / 2 - 40 + i * 58, '400 42px "Inter"', "#bcd7ee", a * fadeIO(t, s.start + .5, s.end, .6)));
+      ctx.save(); ctx.globalAlpha = a * fadeIO(t, s.start + 1, s.end, .6); ctx.fillStyle = "#c9a24a"; ctx.fillRect(W / 2 - 120, H / 2 + 60, 240, 3); ctx.restore();
+      text(c.credit[0], W / 2, H / 2 + 125, '600 50px "Inter"', "#ffffff", a * fadeIO(t, s.start + 1.1, s.end, .6));
+      text(c.credit[1], W / 2, H / 2 + 190, '400 36px "Inter"', "#d0dbe6", a * fadeIO(t, s.start + 1.4, s.end, .6));
+    }
+  }
+
+  // ---------- frame
+  const scenes = TL.scenes, XF = TL.crossfade;
+  function render(t) {
+    ctx.save(); ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, H);
+    const i = scenes.findIndex(s => t >= s.start && t < s.end), idx = i < 0 ? scenes.length - 1 : i, s = scenes[idx];
+    const prev = idx > 0 ? scenes[idx - 1] : null, mix = prev ? clamp((t - s.start) / XF, 0, 1) : 1;
+    const draw = (sc, tt, al) => sc.card ? (ctx.save(), ctx.globalAlpha = al, drawCard(sc, tt), ctx.restore()) : drawImageScene(sc, tt, al);
+    if (prev && mix < 1 && !prev.card) draw(prev, t, 1);
+    draw(s, t, s.card ? 1 : mix);
+    // grain and vignette
+    const old = s.grade === "sepia" || (s.card && s.card.style === "year");
+    ctx.save(); ctx.globalAlpha = old ? .9 : .45; ctx.drawImage(grains[Math.floor(t * 25) % 6], 0, 0, W, H); ctx.restore();
+    ctx.drawImage(vignette, 0, 0);
+    if (old) { // scratches
+      const f = Math.floor(t * 25); ctx.save(); ctx.globalAlpha = .25; ctx.fillStyle = "#fff";
+      for (let k = 0; k < 2; k++) { const x = ((Math.sin(f * (k + 1) * 3.1) + 1) / 2) * W; ctx.fillRect(x, 0, 1.5, H); } ctx.restore();
+    }
+    // CONNECTED stamp
+    if (s.stamp && t >= s.stamp.at) {
+      const p = clamp((t - s.stamp.at) / .25, 0, 1), sc = 1.6 - .6 * ease(p);
+      ctx.save(); ctx.translate(W / 2, H / 2); ctx.rotate(-0.08); ctx.scale(sc, sc); ctx.globalAlpha = p;
+      ctx.strokeStyle = "#7CFF9B"; ctx.lineWidth = 10; ctx.strokeRect(-330, -80, 660, 160);
+      ctx.font = '600 110px "Oswald"'; ctx.fillStyle = "#7CFF9B"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.letterSpacing = "10px";
+      ctx.shadowColor = "rgba(124,255,155,.7)"; ctx.shadowBlur = 30; ctx.fillText(s.stamp.text, 0, 6); ctx.restore();
+    }
+    // flash into the flashback
+    const fl = TL.audio.flash; if (Math.abs(t - fl) < .45) { ctx.fillStyle = `rgba(255,250,235,${1 - Math.abs(t - fl) / .45})`; ctx.fillRect(0, 0, W, H); }
+    // letterbox and caption
+    ctx.fillStyle = "#000"; ctx.fillRect(0, 0, W, BAR); ctx.fillRect(0, H - BAR, W, BAR);
+    if (s.caption) {
+      const a = fadeIO(t, s.start + .35, s.end - .1, .4);
+      text(s.caption, W / 2, H - BAR / 2, '400 40px "Inter"', "#f2efe6", a, { tracking: 1 });
+    }
+    ctx.restore();
+  }
+  window.renderAt = t => { render(t); return true; };
+  window.frameJPEG = q => cv.toDataURL("image/jpeg", q || .9);
+  render(0.01);
+
+  // ---------- real-time playback (standalone or inside the presentation)
+  const score = document.getElementById("score"), btn = document.getElementById("play");
+  let t0 = null;
+  const loop = () => {
+    const t = !score.paused && score.currentTime > 0 ? score.currentTime : (t0 === null ? 0 : (performance.now() - t0) / 1000);
+    render(Math.min(t, TL.duration - 0.01));
+    if (t < TL.duration) requestAnimationFrame(loop); else { window.parent.postMessage({ source: "actsEU-movie", ended: true }, "*"); }
+  };
+  const start = () => { btn.hidden = true; t0 = performance.now(); score.play().catch(() => {}); requestAnimationFrame(loop); };
+  btn.addEventListener("click", start);
+  window.addEventListener("message", e => { if (e.data && e.data.source === "actsEU-deck" && e.data.cmd === "play") start(); });
+  if (/[?&]autoplay=1/.test(location.search)) start();
+  if (/[?&]capture=1/.test(location.search)) btn.hidden = true;
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,426 @@
+<title>Tender Portfolio Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: a bid-room console. Controls left, verdict and evidence right; one tender table below. */
+:root {
+  --bg: #f4f8fb; --surface: #ffffff; --surface-2: #e9f2f8; --ink: #0d2f4c; --muted: #536c82; --line: #cfe0eb;
+  --navy: #07395f; --accent: #1083b5; --accent-ink: #ffffff;
+  --series-a: #0f7fb0; --series-b: #c2702a;
+  --good: #1f7a4d; --good-bg: #e2f3ea; --warn: #8a5a00; --warn-bg: #fdf0d5; --bad: #a3271c; --bad-bg: #fbe4e1; --neutral-bg: #edf1f4;
+  --display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  --body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #071725; --surface: #0b1d2c; --surface-2: #10283b; --ink: #e3f0f8; --muted: #93adc1; --line: #1f3c53;
+  --navy: #9fd3ee; --accent: #3aaedc; --accent-ink: #04192a;
+  --series-a: #2a9ccb; --series-b: #c97e3e;
+  --good: #6fd29f; --good-bg: #123b2a; --warn: #f0c46a; --warn-bg: #3a2c0d; --bad: #f19a8f; --bad-bg: #3d1a17; --neutral-bg: #142c3e;
+  color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #071725; --surface: #0b1d2c; --surface-2: #10283b; --ink: #e3f0f8; --muted: #93adc1; --line: #1f3c53;
+  --navy: #9fd3ee; --accent: #3aaedc; --accent-ink: #04192a;
+  --series-a: #2a9ccb; --series-b: #c97e3e;
+  --good: #6fd29f; --good-bg: #123b2a; --warn: #f0c46a; --warn-bg: #3a2c0d; --bad: #f19a8f; --bad-bg: #3d1a17; --neutral-bg: #142c3e;
+  color-scheme: dark; }
+
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 400 14px/1.5 var(--body); }
+.wrap { max-width: 1240px; margin: 0 auto; padding-inline: 20px; padding-block: 22px 40px; display: grid; gap: 18px; }
+header.top { display: grid; gap: 6px; border-bottom: 1px solid var(--line); padding-bottom: 14px; }
+.eyebrow { font: 700 11px/1.2 var(--mono); letter-spacing: .09em; text-transform: uppercase; color: var(--accent); }
+h1 { font: 700 clamp(26px, 3.4vw, 38px)/1.05 var(--display); letter-spacing: -.02em; margin: 0; color: var(--navy); text-wrap: balance; }
+.sub { color: var(--muted); max-width: 90ch; margin: 0; }
+.layout { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 18px; align-items: start; }
+@media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px; display: grid; gap: 14px; min-width: 0; }
+.panel h2 { font: 600 15px/1.2 var(--display); margin: 0; color: var(--ink); }
+.panel .note { color: var(--muted); font-size: 12.5px; margin: 0; }
+.field { display: grid; gap: 6px; }
+.field label { font-weight: 600; font-size: 13px; display: flex; justify-content: space-between; gap: 8px; }
+.field output { font: 700 12.5px var(--mono); color: var(--accent); font-variant-numeric: tabular-nums; }
+input[type=range] { width: 100%; accent-color: var(--accent); }
+.seg { display: grid; grid-template-columns: 1fr 1fr; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg button { border: 0; background: var(--surface); color: var(--ink); padding: 9px 6px; font: 600 12.5px var(--body); cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+.seg button:focus-visible, .btn:focus-visible, tbody tr:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.btn { border: 1px solid var(--line); background: var(--surface-2); color: var(--ink); border-radius: 8px; padding: 9px 12px; font: 600 13px var(--body); cursor: pointer; }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.main { display: grid; gap: 18px; min-width: 0; }
+.verdict { display: grid; gap: 10px; }
+.verdict p { margin: 0; font-size: 15px; max-width: 80ch; }
+.verdict strong { color: var(--navy); }
+.kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.kpi { background: var(--surface-2); border-radius: 8px; padding: 10px 12px; display: grid; gap: 2px; }
+.kpi .k { font: 600 11px/1.2 var(--mono); letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.kpi .v { font: 700 21px/1.15 var(--display); font-variant-numeric: tabular-nums; color: var(--ink); }
+.kpi .c { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.chart-wrap { position: relative; }
+.legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: 12.5px; color: var(--muted); }
+.legend span::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; background: var(--sw); }
+svg.hist { width: 100%; height: auto; display: block; }
+svg.hist text { fill: var(--muted); font: 500 11px var(--mono); }
+.tip { position: absolute; pointer-events: none; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; font-size: 12px; box-shadow: 0 6px 20px rgba(0,0,0,.18); color: var(--ink); min-width: 190px; }
+.tip b { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.table-scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; min-width: 780px; font-size: 13px; }
+th { text-align: left; font: 600 11px/1.2 var(--mono); letter-spacing: .05em; text-transform: uppercase; color: var(--muted); padding: 8px 6px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+td { padding: 9px 6px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+td.num { text-align: right; font-variant-numeric: tabular-nums; font-family: var(--mono); font-size: 12.5px; white-space: nowrap; }
+tbody tr { cursor: pointer; }
+tbody tr:hover { background: var(--surface-2); }
+tbody tr.sel { box-shadow: inset 4px 0 0 var(--accent); }
+tbody tr.open { background: var(--surface-2); }
+.title-cell { max-width: 220px; }
+.title-cell .id { font: 600 11.5px var(--mono); color: var(--muted); display: block; }
+.pill { display: inline-flex; align-items: center; gap: 5px; border-radius: 999px; padding: 2px 9px; font: 700 11px/1.6 var(--mono); white-space: nowrap; }
+.pill.bid { background: var(--good-bg); color: var(--good); }
+.pill.cond { background: var(--warn-bg); color: var(--warn); }
+.pill.no { background: var(--bad-bg); color: var(--bad); }
+.pill.neutral { background: var(--neutral-bg); color: var(--muted); }
+.range { width: 120px; height: 18px; display: block; }
+.range line { stroke: var(--muted); stroke-width: 2; }
+.range .zero { stroke: var(--line); stroke-width: 1; }
+.range circle { fill: var(--series-a); stroke: var(--surface); stroke-width: 2; }
+.detail { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); max-width: 820px; }
+.detail h3 { font: 600 13px var(--display); margin: 0 0 4px; }
+.detail ul { margin: 0; padding-left: 18px; }
+.detail li { margin: 2px 0; }
+.approval { display: grid; gap: 10px; }
+textarea { width: 100%; min-height: 70px; border: 1px solid var(--line); border-radius: 8px; padding: 9px; font: 400 13px var(--body); background: var(--surface); color: var(--ink); resize: vertical; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.status-line { font-size: 13px; color: var(--muted); }
+.status-line.done { color: var(--good); font-weight: 600; }
+footer { color: var(--muted); font-size: 12.5px; display: grid; gap: 4px; border-top: 1px solid var(--line); padding-top: 12px; }
+.flash { outline: 3px solid var(--series-b) !important; outline-offset: 3px; border-radius: 6px; transition: outline-color .3s; }
+/* Embedded in the presentation: tighter spacing, no footer. */
+.embed .wrap { padding-block: 10px 16px; gap: 12px; }
+.embed h1 { font-size: 26px; }
+.embed footer { display: none; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="eyebrow">Checkpoint 2 · Stage 10 decision engine · i@work</div>
+    <h1>Which EU energy tenders should we bid on?</h1>
+    <p class="sub" id="runLine"></p>
+  </header>
+
+  <div class="layout">
+    <aside class="panel" aria-label="Assumptions and constraints">
+      <h2>Assumptions and constraints</h2>
+      <div class="field">
+        <label id="profileLabel">Win and margin assumptions</label>
+        <div class="seg" role="group" aria-labelledby="profileLabel">
+          <button type="button" id="profC1" aria-pressed="true">Checkpoint 1</button>
+          <button type="button" id="profCons" aria-pressed="false">Conservative</button>
+        </div>
+        <p class="note" id="profileNote"></p>
+      </div>
+      <div class="field">
+        <label for="lam">Risk aversion <output id="lamOut"></output></label>
+        <input type="range" id="lam" min="0" max="4" step="0.25" value="0.5">
+        <p class="note">Score = expected profit − aversion × average of the worst 5% of outcomes.</p>
+      </div>
+      <div class="field">
+        <label for="budget">Bid budget this cycle <output id="budgetOut"></output></label>
+        <input type="range" id="budget" min="40000" max="200000" step="2500" value="112500">
+      </div>
+      <div class="field">
+        <label for="conc">Bids due within 14 days, max <output id="concOut"></output></label>
+        <input type="range" id="conc" min="1" max="5" step="1" value="3">
+      </div>
+      <div class="field">
+        <label for="over">Chance of winning more than we can deliver, max <output id="overOut"></output></label>
+        <input type="range" id="over" min="0.05" max="0.30" step="0.01" value="0.10">
+      </div>
+      <button type="button" class="btn" id="reset">Reset to engine defaults</button>
+      <p class="note">Same 4,000 seeded scenarios as the Python engine. With the default settings, this page reproduces its selection exactly.</p>
+    </aside>
+
+    <main class="main">
+      <section class="panel verdict" aria-live="polite">
+        <h2>Recommendation</h2>
+        <p id="verdict"></p>
+        <div class="kpis" id="kpis"></div>
+      </section>
+
+      <section class="panel">
+        <h2>Total profit across 4,000 simulated outcomes</h2>
+        <div class="legend">
+          <span style="--sw: var(--series-a)">Recommended portfolio</span>
+          <span style="--sw: var(--series-b)">Bid on every eligible tender</span>
+        </div>
+        <div class="chart-wrap" id="chartWrap">
+          <svg class="hist" id="hist" viewBox="0 0 860 250" role="img" aria-label="Distribution of total profit for the recommended portfolio and for bidding on every eligible tender"></svg>
+          <div class="tip" id="tip" hidden></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>All 14 tenders from the live run</h2>
+        <p class="note">Select a row for reasons, conditions and the draft proposal outline. P5–P95 is the 5th to 95th percentile of profit for that bid on its own (dot: expected). *Win chance is simulated and includes the chance of finishing the offer in time.</p>
+        <div class="table-scroll">
+          <table>
+            <thead><tr>
+              <th>Tender</th><th>Deadline</th><th>Value</th><th>Decision</th><th>Win chance*</th>
+              <th>Exp. profit</th><th>P5–P95</th><th>Loss</th><th>Portfolio</th>
+            </tr></thead>
+            <tbody id="rows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel approval">
+        <h2>Bid authority approval</h2>
+        <p class="note">In production this step resumes the n8n Stage 10 Wait node. Nothing is submitted to the EU portal.</p>
+        <label for="rationale" class="field"><span style="font-weight:600">Rationale (required)</span></label>
+        <textarea id="rationale" placeholder="Why you approve or reject this portfolio, and any conditions you attach"></textarea>
+        <div class="row">
+          <button type="button" class="btn primary" id="approve" disabled>Approve portfolio</button>
+          <button type="button" class="btn" id="reject" disabled>Reject</button>
+          <span class="status-line" id="approvalStatus">Waiting for a decision.</span>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <footer>
+    <div id="methodLine"></div>
+    <div>Gates: deadline after the assessment date, open procedure (not a prior-information notice), actionable status, value within the EUR 8M single-bid ceiling. Win probability and margin follow the Checkpoint 1 rules, or half the win probability and an 18% target margin in the conservative profile. Neither is calibrated with real bid outcomes yet.</div>
+  </footer>
+</div>
+
+<script>
+__ENGINE__
+</script>
+<script>
+const DATA = __DATA__;
+(function () {
+  "use strict";
+  const E = window.PortfolioEngine;
+  const co = DATA.company;
+  const DEFAULTS = { profile: "checkpoint1", lam: 0.5, budget: co.available_bid_budget_eur * 0.25, conc: 3, over: 0.10 };
+  const state = { ...DEFAULTS, open: null, approval: null };
+  const $ = id => document.getElementById(id);
+  const eur = v => (v == null ? "n/p" : (v < 0 ? "−" : "") + "€" + Math.abs(Math.round(v)).toLocaleString("en-GB"));
+  const eurK = v => (v < 0 ? "−" : "") + "€" + Math.round(Math.abs(v) / 1000).toLocaleString("en-GB") + "k";
+  const money = v => (v >= 1e6 ? "€" + (v / 1e6).toFixed(1) + "M" : eurK(v));
+  const pct = v => Math.round(v * 100) + "%";
+  const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+  const dateOf = d => (d.gate.deadline_utc ? d.gate.deadline_utc.slice(0, 10) : String(d.deadline || "—"));
+
+  $("runLine").textContent = `Live run of ${DATA.as_of.slice(0, 10)} (n8n run ${DATA.run_id}): the 14 tenders that passed the Stage 2 relevance gate, assessed as of their discovery date for ${co.company_name} (annual bid budget €${co.available_bid_budget_eur.toLocaleString("en-GB")}).`;
+
+  function settings() {
+    return { riskAversion: state.lam, budget: state.budget, capacity: co.annual_revenue_eur * 0.30,
+      overcommitLimit: state.over, windowDays: 14, maxConcurrent: state.conc };
+  }
+
+  function pill(decision) {
+    const cls = decision === "BID" ? "bid" : decision === "CONDITIONAL_BID" ? "cond" : "no";
+    const label = decision === "CONDITIONAL_BID" ? "CONDITIONAL" : decision.replace("_", " ");
+    return `<span class="pill ${cls}">${label}</span>`;
+  }
+
+  function render() {
+    const profile = DATA.profiles[state.profile];
+    const res = E.optimise(profile, settings());
+    const selected = new Set(res.selected);
+    const decisions = profile.decisions.map(d => ({ d, v: E.decide(d, selected) }));
+    const label = r => (profile.decisions.find(d => d.record_id === r) || {}).identifier || r;
+
+    $("profC1").setAttribute("aria-pressed", String(state.profile === "checkpoint1"));
+    $("profCons").setAttribute("aria-pressed", String(state.profile === "conservative"));
+    $("profileNote").textContent = state.profile === "checkpoint1"
+      ? "Win chance 12–72% and about 31% gross margin, as in Checkpoint 1."
+      : "Half the Checkpoint 1 win chance; costs set by the company's 18% target margin.";
+    $("lam").value = state.lam; $("lamOut").textContent = state.lam.toFixed(2);
+    $("budget").value = state.budget; $("budgetOut").textContent = eur(state.budget);
+    $("conc").value = state.conc; $("concOut").textContent = state.conc;
+    $("over").value = state.over; $("overOut").textContent = pct(state.over);
+
+    const s = res.stats, all = res.bidAll;
+    const names = res.selected.map(label);
+    $("verdict").innerHTML = res.selected.length
+      ? `Bid on <strong>${res.selected.length} of ${res.eligible.length}</strong> eligible tenders: ${names.map(esc).join(", ")}. ` +
+        `Expected profit <strong>${eur(s.expected_profit_eur)}</strong>, with a <strong>${pct(s.probability_of_loss)}</strong> chance of a net loss across the portfolio. ` +
+        `${profile.decisions.filter(d => !d.gate.passed).length} of the ${profile.decisions.length} tenders fail a hard gate and are not biddable.`
+      : `No portfolio clears the risk-adjusted bar under these settings. Bidding on every eligible tender would have a ${pct(all.probability_of_loss)} chance of a net loss.`;
+
+    const kpi = (k, v, c) => `<div class="kpi"><span class="k">${k}</span><span class="v">${v}</span><span class="c">${c}</span></div>`;
+    $("kpis").innerHTML = [
+      kpi("Bids selected", `${res.selected.length} / ${res.eligible.length}`, `bid on all: ${res.eligible.length}`),
+      kpi("Expected profit", eurK(s.expected_profit_eur), `bid on all: ${eurK(all.expected_profit_eur)}`),
+      kpi("Chance of loss", pct(s.probability_of_loss), `bid on all: ${pct(all.probability_of_loss)}`),
+      kpi("Worst 5% average", eurK(s.cvar_05_eur), `bid on all: ${eurK(all.cvar_05_eur)}`),
+      kpi("Bid spend", eurK(s.planned_bid_cost_eur), `budget ${eurK(state.budget)} · all: ${eurK(all.planned_bid_cost_eur)}`),
+      kpi("Over-capacity risk", pct(s.overcommit_probability), `limit ${pct(state.over)} · all: ${pct(all.overcommit_probability)}`),
+    ].join("");
+
+    drawHistogram(res.stats.profit, all.profit);
+
+    // Shared scale for the per-tender range bars.
+    let lo = 0, hi = 0;
+    for (const { d } of decisions) { lo = Math.min(lo, d.p05_profit_eur); hi = Math.max(hi, d.p95_profit_eur); }
+    const x = v => 6 + ((v - lo) / (hi - lo || 1)) * 108;
+    $("rows").innerHTML = decisions.map(({ d, v }) => {
+      const status = v.status === "SELECTED" ? "Selected" : v.status === "RESERVE" ? "Reserve" : "Excluded";
+      const range = d.gate.passed
+        ? `<svg class="range" viewBox="0 0 120 18" aria-label="P5 ${eur(d.p05_profit_eur)} to P95 ${eur(d.p95_profit_eur)}"><line class="zero" x1="${x(0)}" x2="${x(0)}" y1="2" y2="16"/><line x1="${x(d.p05_profit_eur)}" x2="${x(d.p95_profit_eur)}" y1="9" y2="9"/><circle cx="${x(d.expected_profit_eur)}" cy="9" r="4.5"/></svg>`
+        : `<span class="pill neutral">gate failed</span>`;
+      const open = state.open === d.record_id;
+      const row = `<tr tabindex="0" data-id="${esc(d.record_id)}" class="${v.status === "SELECTED" ? "sel" : ""} ${open ? "open" : ""}" aria-expanded="${open}">
+        <td class="title-cell"><span class="id">${esc(d.identifier)}</span>${esc(d.title.length > 90 ? d.title.slice(0, 88) + "…" : d.title)}</td>
+        <td class="num">${esc(dateOf(d))}</td>
+        <td class="num">${d.value_eur ? money(d.value_eur) : "n/p"}</td>
+        <td>${pill(v.decision)}</td>
+        <td class="num">${d.gate.passed ? pct(d.win_rate_simulated) : "—"}</td>
+        <td class="num">${d.gate.passed ? eur(d.expected_profit_eur) : "—"}</td>
+        <td>${range}</td>
+        <td class="num">${d.gate.passed ? pct(d.probability_of_loss) : "—"}</td>
+        <td>${status}</td></tr>`;
+      if (!open) return row;
+      const o = d.outline || {};
+      const list = items => `<ul>${(items || []).map(t => `<li>${esc(t)}</li>`).join("") || "<li>None</li>"}</ul>`;
+      const outline = o.generated
+        ? `<h3>Draft proposal outline</h3>${list((o.work_packages || []).map(w => `${w.id} ${w.title}`))}<h3>Needs human confirmation</h3>${list(o.evidence_requiring_human_confirmation)}`
+        : `<h3>Draft proposal outline</h3><p>${esc(o.reason || "Not generated")}</p>`;
+      return row + `<tr class="open"><td colspan="9"><div class="detail">
+        <div><h3>Why</h3>${list(v.reasons)}<h3>Conditions</h3>${list(v.conditions)}</div>
+        <div><h3>Model inputs</h3>${list([
+          `Capability fit ${Math.round(d.capability_fit * 100)}%`,
+          `Win chance (point estimate) ${pct(d.win_probability_point)}`,
+          `Chance of finishing a compliant offer in time ${pct(d.submission_probability)}`,
+          d.company_share_point < 1 ? `Modelled as a ${pct(d.company_share_point)} consortium share` : "Modelled as sole tenderer",
+          `Bid preparation cost (median) ${eur(d.bid_cost_median_eur)}`])}</div>
+        <div>${outline}<p><a href="${esc(d.url)}" target="_blank" rel="noreferrer">Open the notice on the EU portal</a></p></div>
+      </div></td></tr>`;
+    }).join("");
+
+    $("methodLine").textContent = `Engine ${profile.engine_version} · seed ${profile.simulation_config.seed} · ${profile.simulation_config.n_scenarios.toLocaleString("en-GB")} scenarios · exact enumeration of ${res.evaluated} candidate portfolios (rejected: budget ${res.rejected["bid budget"]}, team ${res.rejected["team concurrency"]}, delivery capacity ${res.rejected["delivery capacity"]}).`;
+    updateApproval();
+  }
+
+  // ---------------------------------------------------------- histogram
+  let histState = null;
+  function drawHistogram(a, b) {
+    const svg = $("hist");
+    const W = 860, H = 250, L = 58, R = 16, T = 12, B = 34;
+    if (!a && !b) { svg.innerHTML = ""; return; }
+    const series = [a, b].filter(Boolean);
+    let min = Infinity, max = -Infinity;
+    for (const s of series) for (const v of s) { if (v < min) min = v; if (v > max) max = v; }
+    const span = max - min || 1, bins = 40, step = span / bins;
+    const count = s => { const c = new Array(bins).fill(0); if (!s) return c; for (const v of s) c[Math.min(bins - 1, Math.floor((v - min) / step))]++; return c.map(n => n / s.length); };
+    const ca = count(a), cb = count(b);
+    const ymax = Math.max(...ca, ...cb) * 1.08 || 1;
+    const sx = v => L + ((v - min) / span) * (W - L - R);
+    const sy = p => H - B - (p / ymax) * (H - T - B);
+    const area = (c, color, op) => {
+      let d = `M${sx(min)},${sy(0)}`;
+      c.forEach((p, i) => { d += `L${sx(min + i * step)},${sy(p)}L${sx(min + (i + 1) * step)},${sy(p)}`; });
+      d += `L${sx(max)},${sy(0)}Z`;
+      return `<path d="${d}" fill="${color}" fill-opacity="${op}" stroke="${color}" stroke-width="2" stroke-linejoin="round"/>`;
+    };
+    // Ticks at round EUR values the chart actually spans.
+    const niceStep = (() => { const raw = span / 6, mag = Math.pow(10, Math.floor(Math.log10(raw))); const n = raw / mag; return (n < 1.5 ? 1 : n < 3 ? 2 : n < 7 ? 5 : 10) * mag; })();
+    let ticks = "";
+    for (let v = Math.ceil(min / niceStep) * niceStep; v <= max; v += niceStep) {
+      ticks += `<line x1="${sx(v)}" x2="${sx(v)}" y1="${T}" y2="${H - B}" stroke="var(--line)" stroke-width="1"/><text x="${sx(v)}" y="${H - B + 18}" text-anchor="middle">${eurK(v)}</text>`;
+    }
+    const yTicks = [0, ymax / 2 / 1.08, ymax / 1.08].map(p => `<text x="${L - 8}" y="${sy(p) + 4}" text-anchor="end">${Math.round(p * 100)}%</text>`).join("");
+    const zero = min < 0 && max > 0 ? `<line x1="${sx(0)}" x2="${sx(0)}" y1="${T}" y2="${H - B}" stroke="var(--muted)" stroke-dasharray="3 3" stroke-width="1.5"/><text x="${sx(0) + 5}" y="${T + 11}" text-anchor="start">break-even</text>` : "";
+    svg.innerHTML = ticks + yTicks + area(cb, "var(--series-b)", 0.16) + area(ca, "var(--series-a)", 0.22) + zero +
+      `<line x1="${L}" x2="${W - R}" y1="${H - B}" y2="${H - B}" stroke="var(--muted)" stroke-width="1"/><line id="cross" y1="${T}" y2="${H - B}" stroke="var(--ink)" stroke-width="1" visibility="hidden"/>`;
+    histState = { sx, min, step, bins, ca, cb, L, R, W };
+  }
+
+  const wrap = $("chartWrap"), tip = $("tip");
+  wrap.addEventListener("pointermove", ev => {
+    if (!histState) return;
+    const svg = $("hist"), rect = svg.getBoundingClientRect();
+    const px = ((ev.clientX - rect.left) / rect.width) * histState.W;
+    const i = Math.floor(((px - histState.L) / (histState.W - histState.L - histState.R)) * histState.bins);
+    if (i < 0 || i >= histState.bins) { tip.hidden = true; return; }
+    const from = histState.min + i * histState.step, to = from + histState.step;
+    const cross = document.getElementById("cross");
+    cross.setAttribute("x1", histState.sx(from + histState.step / 2)); cross.setAttribute("x2", histState.sx(from + histState.step / 2)); cross.setAttribute("visibility", "visible");
+    tip.innerHTML = `Profit ${eurK(from)} to ${eurK(to)}<br>Recommended: <b>${(histState.ca[i] * 100).toFixed(1)}%</b> of outcomes<br>Bid on all: <b>${(histState.cb[i] * 100).toFixed(1)}%</b>`;
+    tip.hidden = false;
+    const wr = wrap.getBoundingClientRect();
+    tip.style.left = Math.min(wr.width - 210, Math.max(0, ev.clientX - wr.left + 12)) + "px";
+    tip.style.top = Math.max(0, ev.clientY - wr.top - 70) + "px";
+  });
+  wrap.addEventListener("pointerleave", () => { tip.hidden = true; const c = document.getElementById("cross"); if (c) c.setAttribute("visibility", "hidden"); });
+
+  // ---------------------------------------------------------- approval
+  function updateApproval() {
+    const ok = $("rationale").value.trim().length >= 10;
+    $("approve").disabled = !ok; $("reject").disabled = !ok;
+    const st = $("approvalStatus");
+    if (state.approval) {
+      st.textContent = `${state.approval.decision} at ${state.approval.at} for: ${state.approval.portfolio || "no bids"}. Changing a setting clears this decision.`;
+      st.classList.add("done");
+    } else { st.textContent = ok ? "Ready for a decision." : "Write a rationale of at least 10 characters to decide."; st.classList.remove("done"); }
+  }
+  function decideApproval(decision) {
+    const profile = DATA.profiles[state.profile];
+    const res = E.optimise(profile, settings());
+    const names = res.selected.map(r => (profile.decisions.find(d => d.record_id === r) || {}).identifier);
+    state.approval = { decision, at: new Date().toLocaleString("en-GB"), portfolio: names.join(", ") };
+    updateApproval();
+  }
+  $("rationale").addEventListener("input", updateApproval);
+  $("approve").addEventListener("click", () => decideApproval("Approved"));
+  $("reject").addEventListener("click", () => decideApproval("Rejected"));
+
+  // ---------------------------------------------------------- controls
+  const change = fn => ev => { fn(ev); state.approval = null; render(); };
+  $("profC1").addEventListener("click", change(() => { state.profile = "checkpoint1"; }));
+  $("profCons").addEventListener("click", change(() => { state.profile = "conservative"; }));
+  $("lam").addEventListener("input", change(ev => { state.lam = Number(ev.target.value); }));
+  $("budget").addEventListener("input", change(ev => { state.budget = Number(ev.target.value); }));
+  $("conc").addEventListener("input", change(ev => { state.conc = Number(ev.target.value); }));
+  $("over").addEventListener("input", change(ev => { state.over = Number(ev.target.value); }));
+  $("reset").addEventListener("click", change(() => Object.assign(state, DEFAULTS, { open: null })));
+  const toggleRow = tr => { if (!tr || !tr.dataset.id) return; state.open = state.open === tr.dataset.id ? null : tr.dataset.id; render(); };
+  $("rows").addEventListener("click", ev => { if (ev.target.closest("a")) return; toggleRow(ev.target.closest("tr")); });
+  $("rows").addEventListener("keydown", ev => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); toggleRow(ev.target.closest("tr")); } });
+
+  // ---------------------------------------------------------- presentation remote control
+  // The presentation sends commands with postMessage, so the scripted demo also works when the
+  // console is opened from a local file. Every command does what a click would do.
+  if (/[?&]embed=1/.test(location.search)) document.documentElement.classList.add("embed");
+  const scrollToEl = (el, block) => el && el.scrollIntoView({ behavior: "smooth", block: block || "start" });
+  window.addEventListener("message", ev => {
+    const m = ev.data;
+    if (!m || m.source !== "actsEU-deck") return;
+    const profile = () => DATA.profiles[state.profile];
+    switch (m.cmd) {
+      case "reset":
+        Object.assign(state, DEFAULTS, { open: null, approval: null }); $("rationale").value = ""; render(); window.scrollTo({ top: 0, behavior: "smooth" }); break;
+      case "profile": state.profile = m.value; state.approval = null; render(); break;
+      case "lam": state.lam = Number(m.value); state.approval = null; render(); break;
+      case "open": {
+        const d = profile().decisions.find(x => x.identifier === m.value || x.record_id === m.value);
+        if (d) { state.open = d.record_id; render(); scrollToEl(document.querySelector(`tr[data-id="${CSS.escape(d.record_id)}"]`), "start"); }
+        break;
+      }
+      case "scroll": scrollToEl(document.getElementById(m.value) || document.querySelector(m.value), m.block); break;
+      case "type": $("rationale").value = m.value; updateApproval(); break;
+      case "approve": if (!$("approve").disabled) $("approve").click(); break;
+      case "flash":
+        document.querySelectorAll(m.value).forEach(el => { el.classList.add("flash"); setTimeout(() => el.classList.remove("flash"), m.ms || 2500); });
+        break;
+    }
+  });
+
+  render();
+})();
+</script>

@@ -1,0 +1,414 @@
+{
+ "title": "From Dial-Up to Decision",
+ "fps": 25,
+ "width": 1920,
+ "height": 1080,
+ "duration": 107.0,
+ "crossfade": 0.6,
+ "scenes": [
+  {
+   "id": "cold",
+   "start": 0.0,
+   "end": 3.0,
+   "card": {
+    "lines": [
+     "Not so long from now…"
+    ],
+    "style": "whisper"
+   }
+  },
+  {
+   "id": "s01",
+   "start": 3.0,
+   "end": 10.5,
+   "img": "m01.jpg",
+   "fit": "pan",
+   "grade": "night",
+   "kb": [
+    1.0,
+    0,
+    0,
+    1.04,
+    0,
+    0
+   ],
+   "panWidth": 0.62,
+   "focus": [
+    0.2,
+    0.33
+   ]
+  },
+  {
+   "id": "y1996",
+   "start": 10.5,
+   "end": 13.0,
+   "card": {
+    "lines": [
+     "1996"
+    ],
+    "sub": "Grandpa remembers…",
+    "style": "year"
+   },
+   "grade": "sepia"
+  },
+  {
+   "id": "s02",
+   "start": 13.0,
+   "end": 18.5,
+   "img": "m02.jpg",
+   "fit": "contain",
+   "grade": "sepia",
+   "kb": [
+    1.0,
+    0,
+    0,
+    1.08,
+    0,
+    0
+   ],
+   "caption": "Back then, the internet came through the phone line…"
+  },
+  {
+   "id": "s03",
+   "start": 18.5,
+   "end": 26.0,
+   "img": "m03.jpg",
+   "fit": "contain",
+   "grade": "sepia",
+   "kb": [
+    1.02,
+    0,
+    0,
+    1.12,
+    0.02,
+    0
+   ],
+   "caption": "One modem. One phone call. One page at a time."
+  },
+  {
+   "id": "s04",
+   "start": 26.0,
+   "end": 36.8,
+   "img": "m04.jpg",
+   "fit": "contain",
+   "grade": "sepia",
+   "kb": [
+    1.0,
+    0,
+    0,
+    1.16,
+    0,
+    0.02
+   ],
+   "caption": "…and a lot of waiting.",
+   "stamp": {
+    "at": 35.7,
+    "text": "CONNECTED"
+   }
+  },
+  {
+   "id": "s05",
+   "start": 36.8,
+   "end": 42.0,
+   "img": "m05.jpg",
+   "fit": "contain",
+   "grade": "fade",
+   "kb": [
+    1.05,
+    -0.02,
+    0,
+    1.0,
+    0.02,
+    0
+   ],
+   "caption": "Searching meant digging."
+  },
+  {
+   "id": "s06",
+   "start": 42.0,
+   "end": 46.5,
+   "img": "m06.jpg",
+   "fit": "cover",
+   "grade": "muted",
+   "kb": [
+    1.0,
+    0,
+    0,
+    1.08,
+    -0.02,
+    0
+   ],
+   "caption": "Then came the search engines."
+  },
+  {
+   "id": "s07",
+   "start": 46.5,
+   "end": 50.0,
+   "img": "m07.jpg",
+   "fit": "contain",
+   "grade": "muted",
+   "kb": [
+    1.0,
+    0,
+    0,
+    1.06,
+    0,
+    0
+   ],
+   "caption": "Browsers rose…"
+  },
+  {
+   "id": "s08",
+   "start": 50.0,
+   "end": 53.5,
+   "img": "m08.jpg",
+   "fit": "contain",
+   "grade": "muted",
+   "kb": [
+    1.06,
+    0,
+    0,
+    1.0,
+    0,
+    0
+   ],
+   "caption": "…and fell."
+  },
+  {
+   "id": "s09",
+   "start": 53.5,
+   "end": 58.0,
+   "img": "m09.jpg",
+   "fit": "contain",
+   "grade": "dark",
+   "kb": [
+    1.0,
+    0,
+    0,
+    1.1,
+    0,
+    0.02
+   ],
+   "caption": "Faster lines. More pages. More noise."
+  },
+  {
+   "id": "s10",
+   "start": 58.0,
+   "end": 62.5,
+   "img": "m10.jpg",
+   "fit": "contain",
+   "grade": "dark",
+   "kb": [
+    1.08,
+    0.02,
+    0,
+    1.0,
+    -0.02,
+    0
+   ],
+   "caption": "Data everywhere. Decisions nowhere."
+  },
+  {
+   "id": "s11",
+   "start": 62.5,
+   "end": 66.0,
+   "img": "m11.jpg",
+   "fit": "contain",
+   "grade": "none",
+   "kb": [
+    1.0,
+    0,
+    0,
+    1.06,
+    0,
+    0
+   ]
+  },
+  {
+   "id": "hinge",
+   "start": 66.0,
+   "end": 73.5,
+   "card": {
+    "style": "beats",
+    "beats": [
+     [
+      66.3,
+      68.6,
+      "Thirty years faster."
+     ],
+     [
+      68.6,
+      70.9,
+      "Billions of pages more."
+     ],
+     [
+      70.9,
+      73.5,
+      "Still, nobody can read every tender, every annex, every deadline."
+     ]
+    ]
+   }
+  },
+  {
+   "id": "s12",
+   "start": 73.5,
+   "end": 78.0,
+   "img": "m12.jpg",
+   "fit": "contain",
+   "grade": "cool",
+   "kb": [
+    1.0,
+    0,
+    0,
+    1.06,
+    0,
+    0
+   ],
+   "caption": "So we stopped searching… and started building."
+  },
+  {
+   "id": "s13",
+   "start": 78.0,
+   "end": 83.5,
+   "img": "m13.jpg",
+   "fit": "pan",
+   "grade": "cool",
+   "kb": [
+    1.0,
+    0,
+    0,
+    1.03,
+    0,
+    0
+   ],
+   "caption": "An agent that searches, reads and checks the evidence…",
+   "panWidth": 0.5,
+   "focus": [
+    0.3,
+    0.62
+   ]
+  },
+  {
+   "id": "s14",
+   "start": 83.5,
+   "end": 89.0,
+   "img": "m14.jpg",
+   "fit": "cover",
+   "grade": "cool",
+   "kb": [
+    1.08,
+    0,
+    0,
+    1.0,
+    0,
+    0
+   ],
+   "caption": "…turns the web into structured decisions…"
+  },
+  {
+   "id": "s15",
+   "start": 89.0,
+   "end": 94.5,
+   "img": "m15.jpg",
+   "fit": "contain",
+   "grade": "cool",
+   "kb": [
+    1.0,
+    0,
+    0,
+    1.08,
+    -0.02,
+    0
+   ],
+   "caption": "…and leaves the final call to a human."
+  },
+  {
+   "id": "title",
+   "start": 94.5,
+   "end": 100.5,
+   "card": {
+    "lines": [
+     "FROM DIAL-UP",
+     "TO DECISION"
+    ],
+    "sub": "What AI can do · Why it matters · How it works",
+    "style": "title"
+   }
+  },
+  {
+   "id": "project",
+   "start": 100.5,
+   "end": 107.0,
+   "card": {
+    "style": "credits",
+    "lines": [
+     "EU TENDER AUTONOMOUS AI AGENT"
+    ],
+    "sub": "EU Energy Funding and Tender: Autonomous Energy-Tender Intelligence System",
+    "credit": [
+     "Dr.-Ing. Walid Barakat · i@work",
+     "Principal Consultant for AI-Energy Systems and Sustainable AI Infrastructure"
+    ]
+   }
+  }
+ ],
+ "audio": {
+  "dialup": {
+   "file": "dialup.mp3",
+   "at": 10.8,
+   "gain_db": 20
+  },
+  "impacts": [
+   3.0,
+   35.7,
+   66.0,
+   94.5,
+   100.5
+  ],
+  "braams": [
+   66.0,
+   94.5
+  ],
+  "risers": [
+   [
+    9.0,
+    10.5
+   ],
+   [
+    72.0,
+    73.5
+   ],
+   [
+    92.8,
+    94.5
+   ]
+  ],
+  "flash": 10.5,
+  "sections": {
+   "cold": [
+    0,
+    10.5
+   ],
+   "flashback": [
+    10.5,
+    36.8
+   ],
+   "web": [
+    36.8,
+    66.0
+   ],
+   "hinge": [
+    66.0,
+    73.5
+   ],
+   "hope": [
+    73.5,
+    100.5
+   ],
+   "end": [
+    100.5,
+    107.0
+   ]
+  }
+ }
+}

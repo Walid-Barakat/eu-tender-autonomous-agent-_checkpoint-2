@@ -1,0 +1,439 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Part 03 · The Tender Intelligence Squad</title>
+<style>
+/*__FONTS__*/
+/*TEAM-CSS-START*/
+:root {
+  --navy: #07395f; --navy-deep: #031f35; --night: #011321; --cyan: #1ea8d8; --cyan-soft: #84d2ee;
+  --paper: #f8fbfd; --ink: #103b5e; --muted: #5d7388; --line: #c9e1ec; --gold: #f0b95e; --green: #4fbe8c;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: var(--night); color: #e8f4fb;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; }
+button { font: inherit; cursor: pointer; }
+#viewport { position: fixed; inset: 0; display: grid; place-items: center; }
+#stage { position: absolute; left: 50%; top: 50%; width: 1920px; height: 1080px; transform-origin: 0 0; overflow: hidden;
+  background: radial-gradient(circle at 18% 8%, #0d4b73 0, var(--navy-deep) 46%, var(--night) 100%); }
+#stage::before { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .35;
+  background-image: linear-gradient(rgba(132,210,238,.07) 1px, transparent 1px), linear-gradient(90deg, rgba(132,210,238,.07) 1px, transparent 1px);
+  background-size: 64px 64px; mask-image: radial-gradient(circle at 50% 40%, #000 0, transparent 80%); }
+.scene { position: absolute; inset: 0; opacity: 0; pointer-events: none; transition: opacity .55s ease; }
+.scene.on { opacity: 1; pointer-events: auto; }
+.kicker { font: 600 26px/1 Oswald, "Arial Narrow", sans-serif; letter-spacing: .22em; text-transform: uppercase; color: var(--cyan-soft); }
+.robot-svg { overflow: visible; }
+
+/* ------------------------------------------------ intro: the team photo */
+#intro .copy { position: absolute; left: 0; right: 0; top: 92px; text-align: center; }
+#intro h1 { margin: 22px 0 0; font: 600 128px/1 Oswald, "Arial Narrow", sans-serif; letter-spacing: .01em; text-transform: uppercase; color: #fff;
+  text-shadow: 0 8px 40px rgba(30,168,216,.35); }
+#intro h1 em { font-style: normal; color: var(--gold); }
+#intro .sub { margin: 26px auto 0; max-width: 1240px; font-size: 34px; line-height: 1.35; color: #cfe6f3; }
+#intro .crew { position: absolute; left: 0; right: 0; bottom: 150px; height: 560px; }
+#intro .crew .m { position: absolute; bottom: 0; width: 250px; height: 360px; opacity: 0; transform: translateY(80px) scale(.6);
+  transition: transform .7s cubic-bezier(.2,1.5,.4,1), opacity .4s ease; }
+#intro .crew .m.in { opacity: 1; transform: none; }
+#intro .crew .m .tag { position: absolute; left: 50%; bottom: -8px; transform: translateX(-50%); font: 600 22px/1 Oswald, sans-serif;
+  letter-spacing: .1em; color: #fff; background: rgba(3,31,53,.8); border: 1px solid rgba(132,210,238,.4); border-radius: 999px; padding: 6px 14px; }
+#intro .plus { position: absolute; left: 90px; top: 420px; text-align: left; font: 600 26px/1.2 Oswald, sans-serif; letter-spacing: .12em; color: var(--gold);
+  text-transform: uppercase; opacity: 0; transition: opacity .6s ease .2s; }
+#intro.done .plus { opacity: 1; }
+
+/* ------------------------------------------------ pipeline track (agents and finale) */
+.track { position: absolute; left: 70px; right: 70px; top: 46px; height: 132px; display: flex; align-items: center; justify-content: space-between; }
+.track .node { position: relative; display: grid; justify-items: center; gap: 8px; background: none; border: 0; padding: 0; color: #9fc4da;
+  transition: transform .35s ease, opacity .35s ease; }
+.track .node .dot { width: 84px; height: 84px; border-radius: 50%; overflow: hidden; border: 5px solid var(--c, var(--cyan)); background: #dff3ff;
+  box-shadow: 0 6px 18px rgba(0,0,0,.35); opacity: .45; transition: opacity .35s, box-shadow .35s; }
+.track .node .dot img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.06); }
+.track .node span { font: 600 20px/1 Oswald, sans-serif; letter-spacing: .1em; }
+.track .node.done .dot { opacity: .9; }
+.track .node.now { transform: translateY(-4px) scale(1.18); color: #fff; }
+.track .node.now .dot { opacity: 1; box-shadow: 0 0 0 6px rgba(255,255,255,.12), 0 0 34px var(--c); }
+.track .node.human .dot { border-color: var(--gold); }
+.track .node.human span { color: var(--gold); }
+.track .node:hover .dot { opacity: 1; }
+.track i { flex: 1; height: 4px; margin: 0 6px 30px; border-radius: 4px; background: linear-gradient(90deg, rgba(132,210,238,.15), rgba(132,210,238,.45)); position: relative; }
+.track i::after { content: ""; position: absolute; right: -2px; top: -6px; border: 8px solid transparent; border-left-color: rgba(132,210,238,.6); border-right: 0; }
+
+/* ------------------------------------------------ agent scene */
+#agent .figure { position: absolute; left: 70px; top: 220px; width: 760px; height: 800px; }
+#agent .halo { position: absolute; left: 70px; top: 120px; width: 600px; height: 600px; border-radius: 50%;
+  background: radial-gradient(circle, color-mix(in srgb, var(--c) 40%, transparent) 0, transparent 68%); transition: background .5s; }
+#agent .bot { position: absolute; inset: 0; transform: translateX(-120px); opacity: 0; transition: transform .7s cubic-bezier(.2,1.3,.4,1), opacity .4s; }
+#agent .bot.in { transform: none; opacity: 1; }
+#agent .bot svg { width: 100%; height: 100%; animation: bob 3.2s ease-in-out infinite; }
+@keyframes bob { 50% { transform: translateY(-10px); } }
+#agent .card { position: absolute; left: 860px; right: 80px; top: 262px; border-radius: 28px; padding: 46px 56px;
+  background: linear-gradient(160deg, rgba(248,251,253,.97), rgba(232,243,250,.95)); color: var(--ink); box-shadow: 0 30px 80px rgba(0,0,0,.4);
+  border-top: 10px solid var(--c); transform: translateY(30px); opacity: 0; transition: transform .6s ease .1s, opacity .5s ease .1s; }
+#agent .card.in { transform: none; opacity: 1; }
+#agent .pos { display: flex; gap: 14px; align-items: center; font: 600 22px/1 Oswald, sans-serif; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+#agent .pos b { color: #fff; background: var(--c); border-radius: 10px; padding: 8px 14px; letter-spacing: .08em; }
+#agent h2 { margin: 26px 0 0; font: 600 76px/1.02 Oswald, sans-serif; color: var(--navy); }
+#agent .role { margin-top: 12px; display: flex; gap: 14px; align-items: center; font-size: 28px; color: var(--muted); }
+#agent .role .stage { font-size: 20px; font-weight: 600; color: var(--ink); border: 2px solid var(--line); border-radius: 999px; padding: 5px 14px; }
+#agent .fn { margin: 30px 0 0; font-size: 34px; line-height: 1.4; color: var(--ink); }
+#agent .io { margin-top: 30px; display: grid; grid-template-columns: 1fr auto 1fr; gap: 18px; align-items: stretch; }
+#agent .io div { border-radius: 16px; padding: 20px 24px; font-size: 28px; line-height: 1.3; background: #eaf4fa; border: 2px solid var(--line); }
+#agent .io div small { display: block; font: 600 17px/1 Oswald, sans-serif; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+#agent .io .arrow { align-self: center; font-size: 42px; color: var(--c); background: none; border: 0; padding: 0; }
+#agent .io div.out { background: color-mix(in srgb, var(--c) 12%, white); border-color: color-mix(in srgb, var(--c) 45%, white); }
+#agent .bubble { position: absolute; left: 520px; top: 200px; max-width: 360px; padding: 18px 22px; border-radius: 22px 22px 22px 6px;
+  background: #fff; color: var(--navy); font: 600 23px/1.3 Inter, sans-serif; box-shadow: 0 16px 40px rgba(0,0,0,.35);
+  opacity: 0; transform: scale(.7); transform-origin: 0 100%; transition: opacity .3s, transform .4s cubic-bezier(.2,1.6,.4,1); }
+#agent .bubble.in { opacity: 1; transform: none; }
+.ai-label { position: absolute; right: 86px; bottom: 112px; font: 600 16px/1 Oswald, sans-serif; letter-spacing: .14em; text-transform: uppercase; color: #8fb4ca; }
+
+/* ------------------------------------------------ finale */
+#finale .human-card { position: absolute; left: 50%; top: 250px; transform: translateX(-50%); display: grid; justify-items: center; text-align: center; }
+#finale .portrait { width: 330px; height: 330px; border-radius: 50%; overflow: hidden; border: 12px solid var(--gold); background: #dff3ff;
+  box-shadow: 0 0 0 14px rgba(240,185,94,.15), 0 0 90px rgba(240,185,94,.45); transform: scale(.6); opacity: 0;
+  transition: transform .8s cubic-bezier(.2,1.4,.4,1), opacity .5s; }
+#finale .portrait img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.06); }
+#finale.go .portrait { transform: none; opacity: 1; }
+#finale h2 { margin: 34px 0 0; font: 600 70px/1 Oswald, sans-serif; color: #fff; }
+#finale .role { margin-top: 14px; font: 600 28px/1 Oswald, sans-serif; letter-spacing: .16em; text-transform: uppercase; color: var(--gold); }
+#finale .fn { margin-top: 22px; max-width: 1100px; font-size: 30px; line-height: 1.4; color: #cfe6f3; }
+#finale .chips { margin-top: 30px; display: flex; gap: 18px; }
+#finale .chips span { border: 2px solid rgba(132,210,238,.45); border-radius: 999px; padding: 10px 22px; font-size: 24px; color: #e8f4fb; }
+#finale .chips span.g { border-color: var(--gold); color: var(--gold); }
+
+/* ------------------------------------------------ captions, controls, start */
+#caption { position: absolute; z-index: 5; left: 50%; bottom: 46px; transform: translateX(-50%); max-width: 1500px; padding: 12px 26px; border-radius: 12px;
+  background: rgba(1,19,33,.86); color: #fff; font: 600 30px/1.3 Inter, sans-serif; text-align: center; opacity: 0; transition: opacity .2s; }
+#caption.on { opacity: 1; }
+body.no-captions #caption { display: none; }
+#bar { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 20; display: flex; gap: 8px; align-items: center;
+  padding: 8px 10px; border-radius: 14px; background: rgba(3,31,53,.88); border: 1px solid rgba(132,210,238,.25); backdrop-filter: blur(6px);
+  transition: opacity .3s; font-size: 14px; }
+body.idle #bar { opacity: 0; }
+#bar button { white-space: nowrap; border: 1px solid rgba(132,210,238,.3); border-radius: 9px; padding: 8px 12px; color: #e8f4fb; background: rgba(7,57,95,.7); }
+#bar button.active { background: var(--cyan); color: var(--night); border-color: var(--cyan); }
+#bar .meta { min-width: 210px; padding: 0 8px; color: #9fc4da; font-variant-numeric: tabular-nums; }
+#bar .prog { width: 160px; height: 6px; border-radius: 6px; background: rgba(132,210,238,.2); overflow: hidden; }
+#bar .prog b { display: block; height: 100%; width: 0; background: var(--cyan); transition: width .4s; }
+#start { position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; padding: 16px; background: rgba(1,19,33,.78); backdrop-filter: blur(6px); }
+#start.hidden { display: none; }
+#start .box { width: min(760px, 100%); border-radius: 22px; padding: 34px 38px; background: linear-gradient(160deg, #0b3f66, #04223a);
+  border: 1px solid rgba(132,210,238,.3); box-shadow: 0 30px 90px rgba(0,0,0,.5); }
+#start h1 { margin: 12px 0 10px; font: 600 54px/1.05 Oswald, sans-serif; text-transform: uppercase; color: #fff; }
+#start p { margin: 0 0 16px; line-height: 1.5; color: #cfe6f3; }
+#start .faces { display: flex; margin: 6px 0 22px; }
+#start .faces img { width: 54px; height: 54px; border-radius: 50%; border: 3px solid var(--c); margin-right: -10px; background: #dff3ff; object-fit: cover; }
+#start .keys { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 18px; margin: 0 0 22px; font-size: 14px; color: #9fc4da; }
+#start kbd { font: 600 12px ui-monospace, monospace; color: #fff; background: rgba(255,255,255,.12); border-radius: 5px; padding: 2px 6px; }
+#start .go { width: 100%; border: 0; border-radius: 14px; padding: 18px; font-size: 20px; font-weight: 700; color: var(--night); background: var(--cyan); }
+#start small { display: block; margin-top: 12px; color: #8fb4ca; }
+@media (max-width: 640px) { #start .keys { grid-template-columns: 1fr; } #bar .prog, #bar .meta { display: none; } }
+/*TEAM-CSS-END*/
+</style>
+</head>
+<body>
+<!--TEAM-MARKUP-START-->
+<div id="viewport"><div id="stage">
+  <section class="scene" id="intro">
+    <div class="copy"><div class="kicker" id="introKicker"></div><h1 id="introTitle"></h1><p class="sub" id="introSub"></p></div>
+    <div class="crew" id="crew"></div>
+    <div class="plus">+ one human<br>with the final say</div>
+  </section>
+  <section class="scene" id="agent">
+    <div class="track" id="trackA"></div>
+    <div class="figure"><div class="halo"></div><div class="bot" id="bot"></div><div class="bubble" id="bubble"></div></div>
+    <div class="card" id="card">
+      <div class="pos" id="pos"></div>
+      <h2 id="name"></h2>
+      <div class="role"><span id="role"></span><span class="stage" id="stageTag"></span></div>
+      <p class="fn" id="fn"></p>
+      <div class="io"><div class="in"><small>Input</small><span id="ioIn"></span></div><div class="arrow">→</div><div class="out"><small>Output</small><span id="ioOut"></span></div></div>
+    </div>
+    <div class="ai-label">AI-generated voice</div>
+  </section>
+  <section class="scene" id="finale">
+    <div class="track" id="trackF"></div>
+    <div class="human-card">
+      <div class="portrait"><img id="humanImg" alt="Dr.-Ing. Walid Barakat"></div>
+      <h2 id="humanName"></h2><div class="role" id="humanRole"></div><p class="fn" id="humanFn"></p>
+      <div class="chips"><span>9 agents · the evidence</span><span>Agent 10 · the portfolio</span><span class="g">1 human · the decision</span></div>
+    </div>
+  </section>
+  <div id="caption"></div>
+</div></div>
+
+<div id="bar">
+  <button id="bPrev" title="Previous (←)">◀</button>
+  <button id="bPlay" title="Pause or resume (Space, P)">Pause</button>
+  <button id="bNext" title="Next (→)">▶</button>
+  <div class="meta" id="meta">Ready</div>
+  <div class="prog"><b id="prog"></b></div>
+  <button id="bCap" class="active" title="Captions (C)">Captions</button>
+  <button id="bVoice" class="active" title="Voices (V)">Voices</button>
+  <button id="bFull" title="Full screen (F)">Full screen</button>
+</div>
+
+<div id="start"><div class="box">
+  <div class="kicker">Part 03 · Meet the team</div>
+  <h1 id="startTitle"></h1>
+  <p id="startSub"></p>
+  <div class="faces" id="startFaces"></div>
+  <div class="keys">
+    <span><kbd>Space</kbd> pause or resume</span><span><kbd>← →</kbd> previous or next agent</span>
+    <span><kbd>C</kbd> captions on or off</span><span><kbd>V</kbd> voices on or off</span>
+    <span><kbd>F</kbd> full screen</span><span>Click a face on the track to jump to that agent</span>
+  </div>
+  <button class="go" id="go">Start the team scene</button>
+  <small>Everything is inside this file. The agents' voices are AI-generated and labelled on screen.</small>
+</div></div>
+
+<!--TEAM-MARKUP-END-->
+<!--__ASSETS__-->
+<script>
+/*__DATA__*/
+/*__ART__*/
+/*TEAM-ENGINE-START*/
+(() => {
+  // ------------------------------------------------ embedded media → blob URLs
+  const HOST = window.__teamHost || null;      // set by the merged presentation
+  const ROOT = HOST ? HOST.shadowRoot : document;
+  const PREFIX = HOST ? "team/" : "";
+  const flagEl = HOST || document.body;
+  const assetUrl = (() => {
+    const cache = {};
+    return key => {
+      if (cache[key]) return cache[key];
+      // inside the merged deck, share its decoder so each asset is decoded once and stays usable by both
+      if (HOST && window.getEmbeddedAssetUrl) return (cache[key] = window.getEmbeddedAssetUrl(PREFIX + key));
+      const tag = document.querySelector(`script[type="application/x-embedded-asset"][data-src="${PREFIX + key}"]`);
+      if (!tag) return key;
+      const bin = atob(tag.textContent.trim()); const bytes = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      tag.textContent = "";
+      return (cache[key] = URL.createObjectURL(new Blob([bytes], { type: tag.dataset.mime })));
+    };
+  })();
+  const FACE = assetUrl("face.jpg");
+  const $ = id => ROOT.getElementById(id);
+  const T = TEAM, A = T.agents;
+  const color = i => AGENT_COLORS[i % AGENT_COLORS.length];
+
+  // ------------------------------------------------ the mini-me robot, with Walid's face in the helmet
+  let uid = 0;
+  function robot({ color, label, prop = "", s = 1 }) {
+    const id = `fc${++uid}`;
+    return `<g transform="scale(${s})">
+      <rect x="-70" y="-60" width="34" height="70" rx="16" fill="${color}" opacity=".9"/><rect x="36" y="-60" width="34" height="70" rx="16" fill="${color}" opacity=".9"/>
+      <rect x="-90" y="-220" width="180" height="170" rx="40" fill="${color}"/>
+      <rect x="-56" y="-180" width="112" height="78" rx="22" fill="#eaf6ff" opacity=".92"/>
+      ${label ? `<text x="0" y="-128" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-weight="700" font-size="34" fill="#0f2236">${label}</text>` : ""}
+      <g class="head" transform="translate(0,-330)">
+        <line x1="0" y1="-140" x2="0" y2="-172" stroke="#0f2236" stroke-width="8"/>
+        <circle class="bulb-glow" cx="0" cy="-180" r="16" fill="#ffd34d" opacity="0"/>
+        <circle cx="0" cy="-180" r="16" fill="#ffd34d"/>
+        <rect x="-118" y="-140" width="236" height="230" rx="70" fill="${color}"/>
+        <clipPath id="${id}"><circle cx="0" cy="-22" r="96"/></clipPath>
+        <circle cx="0" cy="-22" r="96" fill="#dff3ff"/>
+        <image href="${FACE}" x="-104" y="-126" width="208" height="208" clip-path="url(#${id})" preserveAspectRatio="xMidYMid slice"/>
+        <circle cx="0" cy="-22" r="96" fill="none" stroke="#0f2236" stroke-width="7"/>
+        <path d="M-60,-104 Q-30,-116 -6,-112" stroke="#fff" stroke-width="8" fill="none" opacity=".55" stroke-linecap="round"/>
+        <rect x="-136" y="-50" width="22" height="64" rx="10" fill="${color}"/><rect x="114" y="-50" width="22" height="64" rx="10" fill="${color}"/>
+      </g>
+      <rect x="-128" y="-200" width="38" height="120" rx="19" fill="${color}" transform="rotate(16 -110 -200)"/>
+      <rect x="90" y="-200" width="38" height="120" rx="19" fill="${color}" transform="rotate(-16 110 -200)"/>
+      ${prop}
+    </g>`;
+  }
+  const robotSvg = (i, withProp) => `<svg class="robot-svg" viewBox="${withProp ? "-250 -560 640 600" : "-150 -540 300 560"}" preserveAspectRatio="xMidYMax meet">
+    <g class="waves" transform="translate(0,-352)">${[0, 1, 2].map(k => `<circle r="${150 + k * 34}" fill="none" stroke="${color(i)}" stroke-width="6" opacity="0"/>`).join("")}</g>
+    ${robot({ color: color(i), label: A[i].id, prop: withProp ? PROPS[i] : "" })}</svg>`;
+
+  // ------------------------------------------------ static content
+  $("introKicker").textContent = T.kicker;
+  $("introTitle").innerHTML = T.title.replace(/(Zero Guesswork\.?)/, "<em>$1</em>");
+  $("introSub").textContent = T.subtitle;
+  $("startTitle").textContent = T.title; $("startSub").textContent = T.subtitle;
+  $("startFaces").innerHTML = A.map((a, i) => `<img src="${FACE}" style="--c:${color(i)}" alt="">`).join("");
+  $("humanImg").src = FACE; $("humanName").textContent = T.human.name; $("humanRole").textContent = T.human.role; $("humanFn").textContent = T.human.fn;
+  // team photo: A01–A05 in the front row, A06–A10 standing behind, between them
+  const crewPos = A.map((a, i) => i < 5 ? [218 + i * 330 - 125, 0, 1, 2] : [383 + (i - 5) * 330 - 125, 170, .78, 1]);
+  $("crew").innerHTML = A.map((a, i) => `<div class="m" style="left:${crewPos[i][0]}px;bottom:${crewPos[i][1]}px;transform-origin:50% 100%;scale:${crewPos[i][2]};z-index:${crewPos[i][3]}">${robotSvg(i, false)}</div>`).join("");
+  const trackHtml = A.map((a, i) => `<button class="node" data-go="${i + 1}" style="--c:${color(i)}" title="${a.id} · ${a.name}"><div class="dot"><img src="${FACE}" alt=""></div><span>${a.id}</span></button>`).join("<i></i>")
+    + `<i></i><button class="node human" data-go="${A.length + 1}" style="--c:var(--gold)" title="${T.human.name}"><div class="dot"><img src="${FACE}" alt=""></div><span>HUMAN</span></button>`;
+  $("trackA").innerHTML = trackHtml; $("trackF").innerHTML = trackHtml;
+  ROOT.querySelectorAll(".track .node").forEach(n => n.addEventListener("click", () => go(+n.dataset.go)));
+
+  // ------------------------------------------------ scenes: intro, ten agents, finale
+  const SCENES = [{ kind: "intro", voice: "vo-intro.mp3", text: T.narrator.intro, dur: VOICES.intro }]
+    .concat(A.map((a, i) => ({ kind: "agent", i, voice: `vo-${a.id.toLowerCase()}.mp3`, text: a.line, dur: VOICES[a.id.toLowerCase()] })))
+    .concat([{ kind: "finale", voice: "vo-finale.mp3", text: T.narrator.finale, dur: VOICES.finale }]);
+  const LEAD = 600, TAIL = 450;  // ms before the voice starts, ms after it ends
+  const TOTAL = SCENES.reduce((s, x) => s + x.dur + (LEAD + TAIL) / 1000, 0);
+  const fmt = s => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, "0")}`;
+
+  let cur = -1, started = false, paused = false, voiceOn = true, capOn = true, audio = null, timer = null, timerDue = 0, timerLeft = 0, timerFn = null, actx = null, analyser = null, levelBuf = null, elapsedBase = 0, clockStart = 0;
+  const wait = (ms, fn) => { clearTimeout(timer); timerFn = fn; timerLeft = ms; if (!paused) { timerDue = performance.now() + ms; timer = setTimeout(() => { timerFn = null; fn(); }, ms); } };
+  const holdTimer = () => { if (timerFn) { clearTimeout(timer); timerLeft = Math.max(0, timerDue - performance.now()); } };
+  const resumeTimer = () => { if (timerFn) wait(timerLeft, timerFn); };
+
+  function setTrack(trackId, i) {
+    $(trackId).querySelectorAll(".node").forEach((n, k) => { n.classList.toggle("now", k === i); n.classList.toggle("done", k < i); });
+  }
+
+  function render(sc) {
+    ROOT.querySelectorAll(".scene").forEach(s => s.classList.remove("on"));
+    const el = $(sc.kind); el.classList.add("on");
+    if (sc.kind === "intro") {
+      el.classList.remove("done");
+      const ms = [...el.querySelectorAll(".m")]; ms.forEach(m => m.classList.remove("in"));
+      ms.forEach((m, k) => setTimeout(() => m.classList.add("in"), 250 + k * 230));
+      setTimeout(() => el.classList.add("done"), 250 + ms.length * 230);
+    } else if (sc.kind === "agent") {
+      const a = A[sc.i], c = color(sc.i);
+      el.style.setProperty("--c", c);
+      setTrack("trackA", sc.i);
+      const bot = $("bot"), card = $("card"), bubble = $("bubble");
+      [bot, card, bubble].forEach(x => x.classList.remove("in"));
+      bot.innerHTML = robotSvg(sc.i, true);
+      $("pos").innerHTML = `<b>Position ${String(sc.i + 1).padStart(2, "0")} / ${A.length}</b><span>${sc.i ? "after " + A[sc.i - 1].id : "first in line"} · ${sc.i < A.length - 1 ? "before " + A[sc.i + 1].id : "before the human"}</span>`;
+      $("name").textContent = `${a.id} · ${a.name}`; $("role").textContent = a.role; $("stageTag").textContent = a.stage;
+      $("fn").textContent = a.fn; $("ioIn").textContent = a.io[0]; $("ioOut").textContent = a.io[1];
+      bubble.textContent = sc.i === 9 ? "Hi! I'm new here." : ["Hello!", "Hi there!", "Hello!", "Hi!", "Hello!", "Hi!", "Hello, all three of us!", "Hi!", "Hello!"][sc.i];
+      requestAnimationFrame(() => requestAnimationFrame(() => { bot.classList.add("in"); card.classList.add("in"); }));
+      setTimeout(() => bubble.classList.add("in"), 500);
+    } else {
+      el.classList.remove("go"); setTrack("trackF", A.length);
+      setTimeout(() => el.classList.add("go"), 300);
+    }
+  }
+
+  // captions: one sentence at a time, timed by its share of the line
+  function captionAt(sc, t) {
+    const parts = sc.text.match(/[^.!?:]+[.!?:]?/g).map(s => s.trim()).filter(Boolean);
+    const total = parts.reduce((s, p) => s + p.length, 0); let acc = 0;
+    for (const p of parts) { acc += p.length; if (t <= sc.dur * acc / total) return p; }
+    return parts[parts.length - 1];
+  }
+
+  function speak(sc) {
+    const done = () => { $("caption").classList.remove("on"); wait(TAIL, () => go(cur + 1)); };
+    let t0 = performance.now();
+    const tick = () => {
+      if (SCENES[cur] !== sc) return;
+      const t = audio ? audio.currentTime : (performance.now() - t0) / 1000;
+      const cap = $("caption"); const text = captionAt(sc, t);
+      if (cap.textContent !== text) cap.textContent = text;
+      cap.classList.toggle("on", capOn && t < sc.dur - 0.05);
+      animateVoice();
+      if (!(audio && audio.ended)) requestAnimationFrame(tick);
+    };
+    if (voiceOn) {
+      audio = new Audio(assetUrl(sc.voice));
+      if (actx && actx.state === "running") { try { const src = actx.createMediaElementSource(audio); src.connect(analyser); } catch (e) {} }
+      audio.onended = () => { audio = null; done(); };
+      audio.play().catch(() => { audio = null; wait(sc.dur * 1000, done); });
+    } else {
+      wait(sc.dur * 1000, done);
+    }
+    requestAnimationFrame(tick);
+  }
+
+  // the speaking robot: antenna glow, head nod and sound rings follow the voice level
+  function animateVoice() {
+    let lvl = 0;
+    if (analyser && audio && !audio.paused) {
+      analyser.getByteTimeDomainData(levelBuf);
+      let s = 0; for (const v of levelBuf) s += (v - 128) * (v - 128);
+      lvl = Math.min(1, Math.sqrt(s / levelBuf.length) / 28);
+    } else if (!voiceOn && !paused) lvl = 0.35 + 0.25 * Math.sin(performance.now() / 120);
+    const sc = SCENES[cur]; if (!sc) return;
+    const root = sc.kind === "agent" ? $("bot") : sc.kind === "intro" ? $("crew") : null;
+    if (!root) return;
+    root.querySelectorAll(".bulb-glow").forEach(b => { b.setAttribute("opacity", (0.25 + lvl * 0.75).toFixed(2)); b.setAttribute("r", (16 + lvl * 26).toFixed(1)); });
+    if (sc.kind === "agent") {
+      root.querySelector(".head").setAttribute("transform", `translate(0,${-330 - lvl * 8}) rotate(${(Math.sin(performance.now() / 260) * 2.5 * lvl).toFixed(2)})`);
+      root.querySelectorAll(".waves circle").forEach((c, k) => {
+        const ph = ((performance.now() / 900) + k / 3) % 1;
+        c.setAttribute("r", (150 + ph * 110).toFixed(0)); c.setAttribute("opacity", (lvl * (1 - ph) * 0.8).toFixed(2));
+      });
+    }
+  }
+
+  function go(n) {
+    if (audio) { audio.onended = null; audio.pause(); audio = null; }
+    clearTimeout(timer); timerFn = null;
+    if (n < 0) { if (HOST && window.__teamBack) { started = false; cur = -1; window.__teamBack(); return; } n = 0; }
+    $("caption").classList.remove("on");
+    if (n >= SCENES.length) { finish(); return; }
+    const wasPaused = paused; paused = false;
+    cur = n; const sc = SCENES[n];
+    render(sc);
+    $("meta").textContent = `${sc.kind === "agent" ? A[sc.i].id + " · " + A[sc.i].name : sc.kind === "intro" ? "The squad" : "The human decides"}`;
+    $("prog").style.width = `${(n + 1) / SCENES.length * 100}%`;
+    wait(LEAD, () => speak(sc));
+    if (wasPaused) togglePause();
+  }
+
+  function finish() {
+    $("meta").textContent = "Part 03 complete";
+    try { window.parent.postMessage({ source: "team", event: "complete" }, "*"); } catch (e) {}
+  }
+
+  function togglePause() {
+    paused = !paused;
+    $("bPlay").textContent = paused ? "Play" : "Pause"; $("bPlay").classList.toggle("active", paused);
+    if (paused) { holdTimer(); if (audio) audio.pause(); }
+    else { resumeTimer(); if (audio) audio.play().catch(() => {}); }
+  }
+
+  function start() {
+    if (started) return; started = true;
+    $("start").classList.add("hidden");
+    setTimeout(() => flagEl.classList.add("idle"), 3000);
+    if (actx) { go(0); return; }
+    try {
+      actx = new (window.AudioContext || window.webkitAudioContext)();
+      analyser = actx.createAnalyser(); analyser.fftSize = 1024; levelBuf = new Uint8Array(analyser.fftSize);
+      analyser.connect(actx.destination); actx.resume();
+    } catch (e) { actx = null; analyser = null; }
+    go(0);
+  }
+
+  // ------------------------------------------------ controls
+  $("go").addEventListener("click", start);
+  $("bPrev").addEventListener("click", () => started && go(cur - 1));
+  $("bNext").addEventListener("click", () => started ? go(cur + 1) : start());
+  $("bPlay").addEventListener("click", () => started ? togglePause() : start());
+  $("bCap").addEventListener("click", () => { capOn = !capOn; $("bCap").classList.toggle("active", capOn); });
+  $("bVoice").addEventListener("click", () => { voiceOn = !voiceOn; $("bVoice").classList.toggle("active", voiceOn); if (audio) audio.muted = !voiceOn; });
+  $("bFull").addEventListener("click", () => document.fullscreenElement ? document.exitFullscreen() : document.documentElement.requestFullscreen?.());
+  // own page: keys on the document; merged: keys caught first, only while the team scene is on screen
+  (HOST ? window : document).addEventListener("keydown", e => {
+    if (HOST) { if (!HOST.classList.contains("active")) return; e.stopImmediatePropagation(); }
+    const k = e.key.toLowerCase();
+    if (!started && (k === "enter" || k === " ")) { e.preventDefault(); start(); return; }
+    if (k === "arrowright" || k === "pagedown") { e.preventDefault(); go(cur + 1); }
+    else if (k === "arrowleft" || k === "pageup") { e.preventDefault(); go(cur - 1); }
+    else if (k === " " || k === "p") { e.preventDefault(); togglePause(); }
+    else if (k === "c") $("bCap").click();
+    else if (k === "v") $("bVoice").click();
+    else if (k === "f") $("bFull").click();
+  }, !!HOST);
+  let idle; document.addEventListener("mousemove", () => { flagEl.classList.remove("idle"); clearTimeout(idle); idle = setTimeout(() => started && flagEl.classList.add("idle"), 2500); });
+  $("go").textContent = `Start the team scene · ${fmt(TOTAL)}`;
+
+  // fit the 1920 × 1080 stage to the window
+  const fit = () => { const k = Math.min(innerWidth / 1920, innerHeight / 1080); $("stage").style.transform = `scale(${k}) translate(-50%,-50%)`; };
+  addEventListener("resize", fit); fit();
+  render(SCENES[0]); $("intro").querySelectorAll(".m").forEach(m => m.classList.add("in")); $("intro").classList.add("done");
+
+  // the merged presentation can start this part directly
+  addEventListener("message", e => { const m = e.data || {}; if (m.target === "team" && m.command === "start") start(); });
+  if (!HOST && new URLSearchParams(location.search).get("autostart")) start();
+  window.__team = { SCENES, TOTAL, go, start, state: () => ({ cur, paused, started, audio: !!audio }) };
+})();
+/*TEAM-ENGINE-END*/
+</script>
+</body>
+</html>

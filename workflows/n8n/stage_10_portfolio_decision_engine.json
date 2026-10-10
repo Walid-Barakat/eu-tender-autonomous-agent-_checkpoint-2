@@ -1,0 +1,573 @@
+{
+  "name": "EU Tender Stage 10 - Portfolio Decision Engine (Checkpoint 2)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## STAGE 10: PORTFOLIO DECISION ENGINE (Checkpoint 2)\nReceives the Stage 9 decision packages of one run, calls the deterministic engine (hard gates -> seeded Monte Carlo -> exact portfolio optimiser), and asks the human bid authority to approve before anything is published. No bid is submitted by this workflow.",
+        "width": 900,
+        "height": 200,
+        "color": 5
+      },
+      "id": "73fe867e-391d-518b-918b-2251f7261ba5",
+      "name": "Stage 10 Overview",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -260,
+        -420
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "4ebb45da-0504-5234-9809-10dbbc0068e1",
+      "name": "When Stage 9 Batch Completes",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -240,
+        0
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "f46eff84-3c35-53a7-b142-0490bbdc3741",
+      "name": "Manual Demo Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Paste the contents of data/live_run_2026_08_12/stage2_advanced_tenders.json\n// into the pinned data of this node for a fully offline demonstration.\nreturn $input.all();"
+      },
+      "id": "07bec987-0e97-5677-9a15-3368aa352c7b",
+      "name": "Load Live-Run Sample (12 Aug 2026)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const items = $input.all().map(i => i.json);\nconst tenders = items.flatMap(j => Array.isArray(j.tenders) ? j.tenders : [j.state?.tender || j.tender || j]);\nconst valid = tenders.filter(t => t && t.recordId);\nif (!valid.length) throw new Error('Stage 10 received no tender records with recordId');\nconst asOf = items[0]?.discovered_at || valid[0].discoveredAt || new Date().toISOString();\nreturn [{ json: { tenders: valid, as_of: asOf, profile: 'both', include_outlines: true,\n  idempotency_key: 'stage10:' + asOf + ':' + valid.map(t => t.recordId).sort().join(',') } }];"
+      },
+      "id": "dff44cf1-177a-5517-9b19-600a0558cda0",
+      "name": "Aggregate Stage 9 Packages",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "da2d86b7-30e3-55b9-9b1d-59313f0f061f",
+              "name": "tenderAgentBaseUrl",
+              "value": "https://REPLACE-WITH-STABLE-HOST",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "90d169db-ab4e-5642-bf0b-b2e566cb7472",
+      "name": "Tender Agent Base URL",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        480,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.tenderAgentBaseUrl }}/decision-engine/run",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Workflow-Stage",
+              "value": "10"
+            },
+            {
+              "name": "Idempotency-Key",
+              "value": "={{ $json.idempotency_key }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({tenders: $json.tenders, as_of: $json.as_of, profile: $json.profile, include_outlines: $json.include_outlines}) }}",
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "id": "1f3b8b52-93c9-5607-8399-5b9cd4ab534b",
+      "name": "Run Decision Engine (FastAPI)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        0
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "hQtmRSIS4OiJlZ75",
+          "name": "Header Auth account 13"
+        }
+      },
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 3000,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "command": "cd /opt/eu-tender-agent && PYTHONPATH=src python -m tender_agent.decision_engine.cli --input /tmp/stage10_input.json --profile both --outlines"
+      },
+      "id": "80e7d3a4-8bd2-56a0-9faa-213d280e7e98",
+      "name": "Run Decision Engine (Execute Command, optional)",
+      "type": "n8n-nodes-base.executeCommand",
+      "typeVersion": 1,
+      "position": [
+        720,
+        200
+      ],
+      "disabled": true,
+      "notes": "Literal 'Execute Command' route named in the brief. Disabled by default: n8n 2.x ships this node disabled and it needs a self-hosted worker with the repository installed. The HTTP route above is the production path."
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "e45114fc-6f8b-5d9b-b33e-9d5da91d6f59",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "completed",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "30c10a3c-0b96-5136-9663-46bc5c6a3997",
+      "name": "Engine Completed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        960,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "const r = $input.first().json;\nconst base = r.runs.checkpoint1, cons = r.runs.conservative;\nconst label = id => (base.decisions.find(d => d.record_id === id) || {}).identifier || id;\nconst lines = [\n  `*Portfolio recommendation* (engine ${base.engine_version}, as of ${base.as_of})`,\n  `Gate-passing tenders: ${base.counts.gate_passed} of ${base.counts.tenders_in}`,\n  `Robust under both profiles: ${r.robustness.selected_under_both_profiles.map(label).join(', ') || 'none'}`,\n  `Only under Checkpoint 1 assumptions: ${r.robustness.selected_only_under_checkpoint1.map(label).join(', ') || 'none'}`,\n  `Expected profit (C1 / conservative): EUR ${Math.round(base.portfolio.stats.expected_profit_eur).toLocaleString()} / EUR ${Math.round(cons.portfolio.stats.expected_profit_eur).toLocaleString()}`,\n  'Approve to publish the recommendation. Nothing is submitted to the EU portal.'\n];\nreturn [{ json: { ...r, approvalText: lines.join('\\n'), resumeUrl: $execution.resumeUrl } }];"
+      },
+      "id": "6d90a638-3730-52ed-863f-9ebc99a95d15",
+      "name": "Build Portfolio Recommendation",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1200,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "REPLACE-WITH-CHANNEL-ID",
+          "mode": "id"
+        },
+        "text": "={{ $json.approvalText + '\\n\\nApprove: ' + $json.resumeUrl + '?approved=true\\nReject: ' + $json.resumeUrl + '?approved=false' }}",
+        "otherOptions": {}
+      },
+      "id": "e8299ea8-c960-5fad-a22c-b563e67c88b8",
+      "name": "Ask Bid Authority for Approval (Slack)",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        1440,
+        -100
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "resume": "webhook",
+        "httpMethod": "GET",
+        "limitWaitTime": true,
+        "limitType": "afterTimeInterval",
+        "resumeAmount": 48,
+        "resumeUnit": "hours",
+        "options": {}
+      },
+      "id": "808a5d85-1fd8-5c44-8e4f-c8f6e1deac3b",
+      "name": "Wait for Human Approval",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1680,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "aea19d92-ca52-5e20-a6bb-11af767f4159",
+              "leftValue": "={{ $json.query?.approved }}",
+              "rightValue": "true",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "efe9caa1-bd9a-59ff-ab06-f6cc6b883268",
+      "name": "Approved?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1920,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f38a15b4-ce50-5e1e-b23d-d120bc079cf4",
+              "name": "humanDecision",
+              "value": "APPROVED",
+              "type": "string"
+            },
+            {
+              "id": "e9981645-a481-52ce-9a55-4ae26988e298",
+              "name": "approvedAt",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "79ba50fb-df0f-5e2a-8e6b-570df25570ae",
+      "name": "Record Approved Decision",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2160,
+        -200
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f801a269-87fd-536e-b8c1-84854b39c23a",
+              "name": "humanDecision",
+              "value": "REJECTED_OR_TIMED_OUT",
+              "type": "string"
+            },
+            {
+              "id": "33581a1e-e02a-5fea-9c31-70c6870ad796",
+              "name": "decidedAt",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "19c890b8-c341-567f-8cd0-3b9d1a042ce6",
+      "name": "Record Rejected or Expired",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2160,
+        0
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "e6fa8377-8e7d-59bc-8b0e-23afdadcf03c",
+      "name": "Decision Record Output",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        2400,
+        -100
+      ],
+      "notes": "Connect to the Notion 'Tender Radar' update and Drive archive used in Stage 9. Kept as an explicit hand-off so the approval record is persisted before any downstream write."
+    },
+    {
+      "parameters": {
+        "select": "channel",
+        "channelId": {
+          "__rl": true,
+          "value": "REPLACE-WITH-CHANNEL-ID",
+          "mode": "id"
+        },
+        "text": "={{ 'Stage 10 decision engine failed: ' + ($json.error?.message || $json.detail || JSON.stringify($json).slice(0, 300)) }}",
+        "otherOptions": {}
+      },
+      "id": "36e10258-66fc-5b76-a503-568686e88262",
+      "name": "Engine Failure Alert (Slack)",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.3,
+      "position": [
+        1200,
+        200
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000
+    },
+    {
+      "parameters": {
+        "errorMessage": "Stage 10 decision engine did not complete; see the Slack alert for details."
+      },
+      "id": "e6c89c58-c19a-52f1-a5da-a9a80ce20e8e",
+      "name": "Stop: Engine Failed",
+      "type": "n8n-nodes-base.stopAndError",
+      "typeVersion": 1,
+      "position": [
+        1440,
+        200
+      ]
+    }
+  ],
+  "connections": {
+    "Manual Demo Trigger": {
+      "main": [
+        [
+          {
+            "node": "Load Live-Run Sample (12 Aug 2026)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Live-Run Sample (12 Aug 2026)": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Stage 9 Packages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Stage 9 Batch Completes": {
+      "main": [
+        [
+          {
+            "node": "Aggregate Stage 9 Packages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate Stage 9 Packages": {
+      "main": [
+        [
+          {
+            "node": "Tender Agent Base URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tender Agent Base URL": {
+      "main": [
+        [
+          {
+            "node": "Run Decision Engine (FastAPI)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run Decision Engine (FastAPI)": {
+      "main": [
+        [
+          {
+            "node": "Engine Completed?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Engine Failure Alert (Slack)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Engine Completed?": {
+      "main": [
+        [
+          {
+            "node": "Build Portfolio Recommendation",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Engine Failure Alert (Slack)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Portfolio Recommendation": {
+      "main": [
+        [
+          {
+            "node": "Ask Bid Authority for Approval (Slack)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ask Bid Authority for Approval (Slack)": {
+      "main": [
+        [
+          {
+            "node": "Wait for Human Approval",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait for Human Approval": {
+      "main": [
+        [
+          {
+            "node": "Approved?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Approved?": {
+      "main": [
+        [
+          {
+            "node": "Record Approved Decision",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Record Rejected or Expired",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record Approved Decision": {
+      "main": [
+        [
+          {
+            "node": "Decision Record Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Record Rejected or Expired": {
+      "main": [
+        [
+          {
+            "node": "Decision Record Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Engine Failure Alert (Slack)": {
+      "main": [
+        [
+          {
+            "node": "Stop: Engine Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveExecutionProgress": true,
+    "timezone": "Europe/Berlin"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}

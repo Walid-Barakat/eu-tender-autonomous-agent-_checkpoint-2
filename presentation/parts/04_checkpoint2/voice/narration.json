@@ -1,0 +1,348 @@
+{
+ "c2-00": {
+  "scene": "market",
+  "duration": 12.46,
+  "target": 15,
+  "cues": [
+   {
+    "start": 0.3,
+    "end": 6.67,
+    "text": "Every year over 250,000 EU public authorities spend about €2 trillion through procurement."
+   },
+   {
+    "start": 7.07,
+    "end": 9.06,
+    "text": "Finding the calls is easy."
+   },
+   {
+    "start": 9.46,
+    "end": 12.27,
+    "text": "Deciding which to bid on is where firms lose money."
+   }
+  ]
+ },
+ "c2-01": {
+  "scene": "hinge",
+  "duration": 22.7,
+  "target": 30,
+  "cues": [
+   {
+    "start": 0.3,
+    "end": 4.15,
+    "text": "The system worked as designed, and its own data showed what was missing."
+   },
+   {
+    "start": 4.55,
+    "end": 9.84,
+    "text": "The relevance agent scored these seven tenders four or five out of five, and it was right about relevance."
+   },
+   {
+    "start": 10.24,
+    "end": 14.87,
+    "text": "But five deadlines had already passed and two were prior-information notices."
+   },
+   {
+    "start": 15.27,
+    "end": 20.22,
+    "text": "Checkpoint 1 recommended conditional bids on four of them and crashed on two."
+   },
+   {
+    "start": 20.62,
+    "end": 22.5,
+    "text": "That is why I built Agent 10."
+   }
+  ]
+ },
+ "c2-02": {
+  "scene": "distribution",
+  "duration": 22.91,
+  "target": 30,
+  "cues": [
+   {
+    "start": 0.3,
+    "end": 3.88,
+    "text": "Agent 10 simulates four thousand outcomes for every bid."
+   },
+   {
+    "start": 4.28,
+    "end": 12.48,
+    "text": "Blue uses the Checkpoint 1 assumptions; orange is a conservative profile with half the win chance and an eighteen percent margin target."
+   },
+   {
+    "start": 12.88,
+    "end": 16.09,
+    "text": "On blue, every eligible tender looks profitable."
+   },
+   {
+    "start": 16.49,
+    "end": 18.36,
+    "text": "On orange, only four do."
+   },
+   {
+    "start": 18.76,
+    "end": 22.71,
+    "text": "There is no win-loss history yet, so the engine always shows both."
+   }
+  ]
+ },
+ "c2-03": {
+  "scene": "portfolio",
+  "duration": 18.78,
+  "target": 30,
+  "cues": [
+   {
+    "start": 0.3,
+    "end": 5.56,
+    "text": "Bids compete for the same budget, the same people in the same weeks, and the same delivery capacity."
+   },
+   {
+    "start": 5.96,
+    "end": 11.0,
+    "text": "The optimiser checks all 127 possible portfolios exactly."
+   },
+   {
+    "start": 11.4,
+    "end": 13.42,
+    "text": "Bidding on everything breaks the budget."
+   },
+   {
+    "start": 13.82,
+    "end": 18.6,
+    "text": "One tender is selected under both profiles: that is the bid I would defend today."
+   }
+  ]
+ },
+ "c2-04": {
+  "scene": "console",
+  "duration": 64.84,
+  "target": 70,
+  "cues": [
+   {
+    "start": 0.4,
+    "end": 5.3,
+    "text": "This is the lightweight interface on the same four thousand scenarios as the Python engine."
+   },
+   {
+    "start": 5.7,
+    "end": 9.89,
+    "text": "Seven of the fourteen tenders fail a hard gate, each with its reason."
+   },
+   {
+    "start": 10.8,
+    "end": 13.09,
+    "text": "The optimiser selects four bids."
+   },
+   {
+    "start": 17.8,
+    "end": 21.46,
+    "text": "Switch to the conservative profile, and four bids become one."
+   },
+   {
+    "start": 27.0,
+    "end": 34.01,
+    "text": "Back on the first profile, raise risk aversion to four: the selection changes, because the bad tail now weighs more."
+   },
+   {
+    "start": 39.8,
+    "end": 44.62,
+    "text": "Open a tender to see its reasons, conditions and a draft proposal outline."
+   },
+   {
+    "start": 50.8,
+    "end": 54.5,
+    "text": "Finally, the bid authority approves with a written rationale."
+   },
+   {
+    "start": 58.2,
+    "end": 62.01,
+    "text": "In n8n, that approval resumes the Stage 10 workflow."
+   },
+   {
+    "start": 62.41,
+    "end": 64.65,
+    "text": "Nothing is ever submitted automatically."
+   }
+  ]
+ },
+ "c2-05": {
+  "scene": "langsmith",
+  "duration": 22.47,
+  "target": 35,
+  "cues": [
+   {
+    "start": 0.3,
+    "end": 4.97,
+    "text": "Both systems ran on the same twenty-three examples with the same evaluators."
+   },
+   {
+    "start": 5.37,
+    "end": 14.08,
+    "text": "On the key test, rejecting tenders that cannot be bid on, Checkpoint 1 scores 0.2 and Checkpoint 2 scores 1.0."
+   },
+   {
+    "start": 14.48,
+    "end": 20.15,
+    "text": "Two failures are fixed, one is confirmed and scheduled, and three questions remain open."
+   },
+   {
+    "start": 20.55,
+    "end": 22.27,
+    "text": "Each has a place in the pilot."
+   }
+  ]
+ },
+ "c2-06": {
+  "scene": "roi",
+  "duration": 26.12,
+  "target": 35,
+  "cues": [
+   {
+    "start": 0.3,
+    "end": 11.22,
+    "text": "For a client firm, the base case breaks even in month seven: plus sixty-five percent in year one and plus one hundred sixty-one over three years, on operational benefits alone."
+   },
+   {
+    "start": 11.62,
+    "end": 20.03,
+    "text": "Across twenty thousand simulated assumption sets, first-year ROI sits between plus twenty-seven and plus one hundred forty-five percent."
+   },
+   {
+    "start": 20.43,
+    "end": 25.94,
+    "text": "If every assumption lands at its worst, it never pays back, so the pilot measures hours first."
+   }
+  ]
+ },
+ "c2-07": {
+  "scene": "risks",
+  "duration": 12.93,
+  "target": 20,
+  "cues": [
+   {
+    "start": 0.3,
+    "end": 2.03,
+    "text": "Twelve risks are registered."
+   },
+   {
+    "start": 2.43,
+    "end": 9.27,
+    "text": "Two already happened in this project: closed tenders were recommended, and credentials ended up in a shared archive."
+   },
+   {
+    "start": 9.67,
+    "end": 12.75,
+    "text": "The top open risk is uncalibrated assumptions."
+   }
+  ]
+ },
+ "c2-08": {
+  "scene": "aiact",
+  "duration": 24.08,
+  "target": 35,
+  "cues": [
+   {
+    "start": 0.3,
+    "end": 12.44,
+    "text": "Under the AI Act this is an AI system, not prohibited and not high-risk: it is not a safety component of energy infrastructure, it scores no person, and procurement is not an Annex III area."
+   },
+   {
+    "start": 12.84,
+    "end": 18.35,
+    "text": "Two duties bind: AI literacy, and machine-readable marking of AI-generated content."
+   },
+   {
+    "start": 18.75,
+    "end": 23.9,
+    "text": "Matching named experts to roles would change the classification, so it is out of scope."
+   }
+  ]
+ },
+ "c2-09": {
+  "scene": "gdpr",
+  "duration": 18.76,
+  "target": 20,
+  "cues": [
+   {
+    "start": 0.3,
+    "end": 4.06,
+    "text": "GDPR applies because notices and annexes name real people."
+   },
+   {
+    "start": 4.46,
+    "end": 8.57,
+    "text": "The basis is legitimate interests, with a DPIA before the pilot."
+   },
+   {
+    "start": 8.97,
+    "end": 18.55,
+    "text": "The fix is mostly engineering: strip personal data before model calls, sign processor agreements, and delete each tender's vectors when it closes."
+   }
+  ]
+ },
+ "c2-10": {
+  "scene": "plan",
+  "duration": 17.95,
+  "target": 25,
+  "cues": [
+   {
+    "start": 0.3,
+    "end": 5.54,
+    "text": "Ten days of hardening, then a three-month paid pilot with one energy engineering firm."
+   },
+   {
+    "start": 5.94,
+    "end": 11.36,
+    "text": "It succeeds if it saves at least twenty-two hours a month and recommends no closed tenders."
+   },
+   {
+    "start": 11.76,
+    "end": 17.75,
+    "text": "Commercially it is a managed service: about eleven thousand euros to set up and twelve hundred a month."
+   }
+  ]
+ },
+ "c2-11": {
+  "scene": "growth",
+  "duration": 25.05,
+  "target": 22,
+  "cues": [
+   {
+    "start": 0.3,
+    "end": 1.95,
+    "text": "The system is built to grow."
+   },
+   {
+    "start": 2.35,
+    "end": 22.29,
+    "text": "Every agent has one job and a typed contract, so new agents plug into the same pipeline: legal and compliance, feasibility and project evaluation, PMO and project delivery, recruiting and outsourcing, finance and controlling, corporate strategy and R&D, and public affairs."
+   },
+   {
+    "start": 22.69,
+    "end": 24.87,
+    "text": "The final decision stays with a human."
+   }
+  ]
+ },
+ "c2-12": {
+  "scene": "end",
+  "duration": 14.73,
+  "target": 15,
+  "cues": [
+   {
+    "start": 0.3,
+    "end": 1.76,
+    "text": "So, should we proceed?"
+   },
+   {
+    "start": 2.16,
+    "end": 13.5,
+    "text": "Yes, to a three-month pilot, under four conditions: measure the manual workload first, record every bid outcome, close the data-protection pre-conditions, and keep a human approving every portfolio."
+   },
+   {
+    "start": 13.9,
+    "end": 14.55,
+    "text": "Thank you."
+   }
+  ]
+ }
+}

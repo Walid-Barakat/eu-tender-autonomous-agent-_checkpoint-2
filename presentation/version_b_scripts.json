@@ -1,0 +1,230 @@
+{
+ "c1": [
+  {
+   "id": "c1-01",
+   "slide": 1,
+   "seconds": 22,
+   "title": "EU Tender Autonomous AI Agent",
+   "text": "Hello everyone. I am Dr.-Ing. Walid Barakat from Bonn, and my company, i@work, builds AI energy systems for the EU market. This is the EU Tender Autonomous AI Agent. Finding a tender is easy. Deciding whether to invest in a bid is hard: it combines eligibility, capability, finance, risk and strategic fit. That decision is what this system automates."
+  },
+  {
+   "id": "c1-02",
+   "slide": 2,
+   "seconds": 16,
+   "title": "Five development phases",
+   "text": "The project ran in five phases: research and scope, RAG, LangGraph agent design, n8n integration, and final polish. Trello tracked it as a delivery plan tied to requirements, tests and corrections."
+  },
+  {
+   "id": "c1-03",
+   "slide": 3,
+   "seconds": 20,
+   "title": "The decision problem",
+   "text": "The system solves one decision in four steps. Discover finds current opportunities from the official EU source. Understand acquires details, documents and comparable evidence. Assess tests eligibility, capability, cost, margin and risk. Decide publishes an auditable recommendation. One human stays above the graph: I approve any real submission."
+  },
+  {
+   "id": "c1-04",
+   "slide": 4,
+   "seconds": 26,
+   "title": "Hybrid architecture",
+   "text": "The architecture is hybrid. n8n runs the operation: a schedule or webhook triggers the EU search, and early validation and triage reject weak records before any paid reasoning. FastAPI is the typed boundary to Python. LangGraph owns state and routing, ReAct chooses evidence tools, and Pinecone grounds the assessment. Reports and receipts return to Notion, Slack and Google Drive."
+  },
+  {
+   "id": "c1-05",
+   "slide": 5,
+   "seconds": 18,
+   "title": "LangGraph state machine",
+   "text": "The state machine starts with validation, so bad input fails early. Evidence is gathered before scoring, so decisions rest on tender content, not model memory. Each specialist writes structured results into shared state, and the last stages turn that state into a decision and a report."
+  },
+  {
+   "id": "c1-06",
+   "slide": 6,
+   "seconds": 16,
+   "title": "Implementation evidence",
+   "text": "This is the working code: a Python package with an API boundary, state models, agent functions, tools, reports and tests. The GitHub repository adds setup, notebooks, workflow exports, diagrams and documentation."
+  },
+  {
+   "id": "c1-07",
+   "slide": 7,
+   "seconds": 14,
+   "title": "Nine stages, nine agents",
+   "text": "Nine stages, nine bounded agent functions, not nine chatbots. Each has an explicit input and output contract, so failures stay isolated and evidence carries forward. You will meet them shortly."
+  },
+  {
+   "id": "c1-08",
+   "slide": 8,
+   "seconds": 20,
+   "title": "Intake and early research",
+   "text": "Agent one validates source records before anything else runs. Then the ReAct researcher chooses the next evidence tool, document intelligence structures the attachments, and retrieval returns relevant passages from Pinecone. Evidence is added step by step, not pushed into one expensive prompt."
+  },
+  {
+   "id": "c1-09",
+   "slide": 9,
+   "seconds": 20,
+   "title": "Reasoning progression",
+   "text": "Each stage receives structured state and returns evidence or a labelled fallback. Eligibility is a hard gate. Feasibility, finance and risk add scored analysis, and strategy produces BID, CONDITIONAL BID or NO BID, with conditions. A weak-evidence warning stays attached to its stage."
+  },
+  {
+   "id": "c1-10",
+   "slide": 10,
+   "seconds": 36,
+   "title": "Full autonomous run",
+   "text": "This is one complete autonomous run, recorded end to end. It starts with the trigger and intake, passes validation and relevance, enters the Python reasoning workflow, and finishes with the decision and its delivery. Twenty-five official opportunities were found. Fourteen passed the relevance gate and completed the full path; eleven were archived before any expensive evidence work. The recording shows the contracts holding: n8n passes structured data to the API, LangGraph advances state, evidence is retrieved, and the report returns for publication."
+  },
+  {
+   "id": "c1-11",
+   "slide": 11,
+   "seconds": 16,
+   "title": "Orchestration evidence",
+   "text": "Here n8n shows an executed workflow, not a diagram: green nodes and item counts show where records advanced or were archived. Live mode confirms the FastAPI boundary, so any failure can be traced to a run and a stage."
+  },
+  {
+   "id": "c1-12",
+   "slide": 12,
+   "seconds": 14,
+   "title": "Trigger and knowledge layer",
+   "text": "The webhook is a second entry point into the same controlled pipeline. Pinecone stores and retrieves document vectors, so the analysis stays grounded in controlled evidence."
+  },
+  {
+   "id": "c1-13",
+   "slide": 13,
+   "seconds": 12,
+   "title": "Report publication",
+   "text": "A decision is not complete until it is delivered. The report carries the recommendation, evidence, scores, risks and next action, and lands in Google Drive."
+  },
+  {
+   "id": "c1-14",
+   "slide": 14,
+   "seconds": 12,
+   "title": "Operational visibility",
+   "text": "Notion is the decision radar: opportunities, decisions, confidence and status in one place. Slack sends the time-sensitive alerts to the team."
+  },
+  {
+   "id": "c1-15",
+   "slide": 15,
+   "seconds": 10,
+   "title": "Delivery receipts",
+   "text": "These are the receipts: the tender in the radar, the report in Drive, the alert in Slack. Analysis alone is not delivery."
+  },
+  {
+   "id": "c1-16",
+   "slide": 16,
+   "seconds": 26,
+   "title": "Hurdles and problem solving",
+   "text": "Getting here took repeated problem solving. Source access moved from the human portal to the official EU Search API. Credentials moved to the HTTP boundary. n8n exposed practical errors: Notion properties that did not match, changing node references, and conditions arriving as strings instead of booleans. The answer was layered: validation, typed conversion, bounded retries, labelled fallbacks and publication receipts."
+  },
+  {
+   "id": "c1-17",
+   "slide": 17,
+   "seconds": 22,
+   "title": "Cost and token assessment",
+   "text": "Development cost was measured, not estimated: 125 dollars and 7 cents of language-model spend across 25.76 million tokens, from mid-July to mid-August 2026. Pinecone, Slack and Notion stayed on free tiers. That is the cost of building; the cost per report must be measured on clean production runs."
+  },
+  {
+   "id": "c1-18",
+   "slide": 18,
+   "seconds": 20,
+   "title": "Achievements and requirements",
+   "text": "The submission links every required capability to evidence: a repository with setup, source, tests, notebook, diagrams and example reports; a Python layer with ReAct, LangGraph, Pinecone RAG, MCP tools and error handling; and an n8n layer with triggers, orchestration, retries and monitoring."
+  },
+  {
+   "id": "c1-19",
+   "slide": 19,
+   "seconds": 12,
+   "title": "Checkpoint 1 complete",
+   "text": "Checkpoint 1 is a working autonomous prototype that turns official EU tender data into evidence-led decisions and delivers them. Now meet the agents that do the work."
+  }
+ ],
+ "c2": [
+  {
+   "id": "c2-00",
+   "scene": "market",
+   "seconds": 15,
+   "title": "Why it matters",
+   "text": "Every year over 250,000 EU public authorities spend about €2 trillion through procurement. Finding the calls is easy. Deciding which to bid on is where firms lose money."
+  },
+  {
+   "id": "c2-01",
+   "scene": "hinge",
+   "seconds": 30,
+   "title": "What the data showed",
+   "text": "The system worked as designed, and its own data showed what was missing. The relevance agent scored these seven tenders four or five out of five, and it was right about relevance. But five deadlines had already passed and two were prior-information notices. Checkpoint 1 recommended conditional bids on four of them and crashed on two. That is why I built Agent 10."
+  },
+  {
+   "id": "c2-02",
+   "scene": "distribution",
+   "seconds": 30,
+   "title": "Each bid is a distribution",
+   "text": "Agent 10 simulates four thousand outcomes for every bid. Blue uses the Checkpoint 1 assumptions; orange is a conservative profile with half the win chance and an eighteen percent margin target. On blue, every eligible tender looks profitable. On orange, only four do. There is no win-loss history yet, so the engine always shows both."
+  },
+  {
+   "id": "c2-03",
+   "scene": "portfolio",
+   "seconds": 30,
+   "title": "Choose the portfolio",
+   "text": "Bids compete for the same budget, the same people in the same weeks, and the same delivery capacity. The optimiser checks all 127 possible portfolios exactly. Bidding on everything breaks the budget. One tender is selected under both profiles: that is the bid I would defend today."
+  },
+  {
+   "id": "c2-04",
+   "scene": "console",
+   "seconds": 70,
+   "title": "The portfolio console",
+   "text": "This is the lightweight interface on the same four thousand scenarios as the Python engine. Seven of the fourteen tenders fail a hard gate, each with its reason. The optimiser selects four bids. Switch to the conservative profile, and four bids become one. Back on the first profile, raise risk aversion to four: the selection changes, because the bad tail now weighs more. Open a tender to see its reasons, conditions and a draft proposal outline. Finally, the bid authority approves with a written rationale. In n8n, that approval resumes the Stage 10 workflow. Nothing is ever submitted automatically."
+  },
+  {
+   "id": "c2-05",
+   "scene": "langsmith",
+   "seconds": 35,
+   "title": "Evaluation in LangSmith",
+   "text": "Both systems ran on the same twenty-three examples with the same evaluators. On the key test, rejecting tenders that cannot be bid on, Checkpoint 1 scores 0.2 and Checkpoint 2 scores 1.0. Two failures are fixed, one is confirmed and scheduled, and three questions remain open. Each has a place in the pilot."
+  },
+  {
+   "id": "c2-06",
+   "scene": "roi",
+   "seconds": 35,
+   "title": "ROI and cost",
+   "text": "For a client firm, the base case breaks even in month seven: plus sixty-five percent in year one and plus one hundred sixty-one over three years, on operational benefits alone. Across twenty thousand simulated assumption sets, first-year ROI sits between plus twenty-seven and plus one hundred forty-five percent. If every assumption lands at its worst, it never pays back, so the pilot measures hours first."
+  },
+  {
+   "id": "c2-07",
+   "scene": "risks",
+   "seconds": 20,
+   "title": "Major risks",
+   "text": "Twelve risks are registered. Two already happened in this project: closed tenders were recommended, and credentials ended up in a shared archive. The top open risk is uncalibrated assumptions."
+  },
+  {
+   "id": "c2-08",
+   "scene": "aiact",
+   "seconds": 35,
+   "title": "EU AI Act",
+   "text": "Under the AI Act this is an AI system, not prohibited and not high-risk: it is not a safety component of energy infrastructure, it scores no person, and procurement is not an Annex III area. Two duties bind: AI literacy, and machine-readable marking of AI-generated content. Matching named experts to roles would change the classification, so it is out of scope."
+  },
+  {
+   "id": "c2-09",
+   "scene": "gdpr",
+   "seconds": 20,
+   "title": "GDPR",
+   "text": "GDPR applies because notices and annexes name real people. The basis is legitimate interests, with a DPIA before the pilot. The fix is mostly engineering: strip personal data before model calls, sign processor agreements, and delete each tender's vectors when it closes."
+  },
+  {
+   "id": "c2-10",
+   "scene": "plan",
+   "seconds": 25,
+   "title": "Go to market",
+   "text": "Ten days of hardening, then a three-month paid pilot with one energy engineering firm. It succeeds if it saves at least twenty-two hours a month and recommends no closed tenders. Commercially it is a managed service: about eleven thousand euros to set up and twelve hundred a month."
+  },
+  {
+   "id": "c2-11",
+   "scene": "growth",
+   "seconds": 25,
+   "title": "Built to grow",
+   "text": "The system is built to grow. Every agent has one job and a typed contract, so new agents plug into the same pipeline: legal and compliance, feasibility and project evaluation, PMO and project delivery, recruiting and outsourcing, finance and controlling, corporate strategy and R&D, and public affairs. The final decision stays with a human."
+  },
+  {
+   "id": "c2-12",
+   "scene": "end",
+   "seconds": 15,
+   "title": "Recommendation",
+   "text": "So, should we proceed? Yes, to a three-month pilot, under four conditions: measure the manual workload first, record every bid outcome, close the data-protection pre-conditions, and keep a human approving every portfolio. Thank you."
+  }
+ ]
+}

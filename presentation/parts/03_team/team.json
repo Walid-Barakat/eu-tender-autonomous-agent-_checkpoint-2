@@ -1,0 +1,148 @@
+{
+ "title": "Ten of Me. Zero Guesswork.",
+ "kicker": "Part 03 · Meet the team",
+ "subtitle": "The Tender Intelligence Squad: ten AI agents, one pipeline, one human decision.",
+ "narrator": {
+  "voice": "lessac",
+  "intro": "Meet the Tender Intelligence Squad: ten agents, one pipeline, and a face you may recognise.",
+  "finale": "Nine agents prepare the evidence. Agent ten builds the portfolio. And one human makes the final call: Doctor Walid Barakat."
+ },
+ "human": {
+  "name": "Dr.-Ing. Walid Barakat",
+  "role": "Bid authority · the human in the loop",
+  "fn": "Approves or rejects the portfolio with a written rationale. Nothing is submitted automatically.",
+  "io": "Portfolio for approval → approved bids"
+ },
+ "agents": [
+  {
+   "id": "A01",
+   "name": "Source validator",
+   "role": "Gatekeeper of data quality",
+   "stage": "Stage 1 · n8n",
+   "fn": "Searches the EU Funding & Tenders API for Energy calls, normalises each record and rejects malformed ones.",
+   "io": [
+    "Raw portal results",
+    "Validated tender records"
+   ],
+   "line": "Agent one, source validator, first in line. I pull every Energy call from the EU portal and reject broken records.",
+   "voice": "libritts:806"
+  },
+  {
+   "id": "A02",
+   "name": "Relevance triage",
+   "role": "First filter",
+   "stage": "Stage 2 · n8n + LLM",
+   "fn": "Scores relevance on metadata only and decides: archive, watch or advance.",
+   "io": [
+    "Validated records",
+    "A shortlist: 14 of 25 on the live run"
+   ],
+   "line": "Agent two, relevance triage. I read the metadata only: archive, watch or advance. Last run, I advanced fourteen of twenty-five.",
+   "voice": "libritts:338"
+  },
+  {
+   "id": "A03",
+   "name": "ReAct researcher",
+   "role": "Evidence collector",
+   "stage": "Stage 3 · LangGraph + MCP",
+   "fn": "Reasons, acts and observes: chooses the next MCP tool until the evidence is enough.",
+   "io": [
+    "One shortlisted tender",
+    "An evidence set with sources"
+   ],
+   "line": "Agent three, the ReAct researcher. I choose the next tool, read the answer, and stop when the evidence is enough.",
+   "voice": "libritts:637"
+  },
+  {
+   "id": "A04",
+   "name": "Document intelligence",
+   "role": "Reader of the annexes",
+   "stage": "Stage 4 · Python",
+   "fn": "Extracts, cleans and chunks the tender documents.",
+   "io": [
+    "Attachments",
+    "Structured, searchable chunks"
+   ],
+   "line": "Agent four, document intelligence. I open the annexes, clean them, and cut them into searchable chunks.",
+   "voice": "libritts:416"
+  },
+  {
+   "id": "A05",
+   "name": "RAG grounding",
+   "role": "Librarian",
+   "stage": "Stage 5 · Pinecone",
+   "fn": "Stores chunks in Pinecone and retrieves cited passages, with a labelled local fallback.",
+   "io": [
+    "Chunks and questions",
+    "Cited evidence"
+   ],
+   "line": "Agent five, RAG grounding. I keep those chunks in Pinecone and return evidence with its citations.",
+   "voice": "libritts:533"
+  },
+  {
+   "id": "A06",
+   "name": "Eligibility",
+   "role": "Compliance gate",
+   "stage": "Stage 6 · rules + LLM",
+   "fn": "Checks the mandatory conditions against the company profile. Any failure means no bid.",
+   "io": [
+    "Evidence and company profile",
+    "Pass or fail, with reasons"
+   ],
+   "line": "Agent six, the eligibility gate. I check the mandatory conditions. If one fails, the answer is no bid.",
+   "voice": "libritts:858"
+  },
+  {
+   "id": "A07",
+   "name": "Technical, finance, risk",
+   "role": "Three specialists in one",
+   "stage": "Stages 7–8 · LLM",
+   "fn": "Score delivery feasibility, margin and bid cost, and risk exposure.",
+   "io": [
+    "Eligible tender with evidence",
+    "Three scored assessments"
+   ],
+   "line": "Agent seven. We are three specialists: can we deliver it, does it pay, and what could go wrong?",
+   "voice": "libritts:182"
+  },
+  {
+   "id": "A08",
+   "name": "Decision strategy",
+   "role": "Recommender",
+   "stage": "Stage 9 · LangGraph",
+   "fn": "Weighs the scores into BID, CONDITIONAL BID or NO BID, with the conditions written out.",
+   "io": [
+    "Scored assessments",
+    "Decision and report"
+   ],
+   "line": "Agent eight, decision strategy. I weigh the scores into bid, conditional bid or no bid, with the conditions written out.",
+   "voice": "libritts:52"
+  },
+  {
+   "id": "A09",
+   "name": "Report and run director",
+   "role": "Delivery and receipts",
+   "stage": "Stage 9 · n8n",
+   "fn": "Publishes the report to Drive, updates the Notion radar, alerts Slack and records the receipts.",
+   "io": [
+    "Decision and report",
+    "Delivered report and receipts"
+   ],
+   "line": "Agent nine, report and run director. I publish every report to Drive, Notion and Slack, and I keep the receipts.",
+   "voice": "libritts:715"
+  },
+  {
+   "id": "A10",
+   "name": "Portfolio strategist",
+   "role": "New in Checkpoint 2",
+   "stage": "Stage 10 · decision engine",
+   "fn": "Checks a bid is still possible, simulates 4,000 outcomes per bid, chooses the portfolio, then waits for a human.",
+   "io": [
+    "All Stage 9 decisions",
+    "A portfolio for approval"
+   ],
+   "line": "Agent ten, the new one from Checkpoint two. I simulate four thousand futures per bid, choose the portfolio, and wait for a human.",
+   "voice": "ryan"
+  }
+ ]
+}

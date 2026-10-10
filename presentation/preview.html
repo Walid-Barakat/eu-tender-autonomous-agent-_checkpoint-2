@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>actsEU Final Presentation Preview</title>
+<!--
+  Offline preview of the new scenes (film, agents, Checkpoint 2, business case).
+  Open this file in Chrome from the unzipped package; it needs final_presentation.js and media-final/ next to it.
+  Checkpoint 1 slides are shown as labelled stand-ins: the real ones play from your deck.
+  Options in the address bar: preview.html?version=B&film=anime&voices=live&team=off
+-->
+<style>
+  :root { --navy: #07395f; --cyan: #1ea8d8; --amber: #f0b95e; --green: #4fbe8c; --ink: #103b5e; --muted: #5d7388; --line: #c9e1ec; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #0b2236; font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif; color: #eaf6ff; min-height: 100vh; display: grid; place-items: center; }
+  .stage { width: min(96vw, calc(88vh * 16 / 9)); }
+  #canvas { position: relative; width: 100%; aspect-ratio: 16 / 9; background: #000; overflow: hidden; border-radius: 6px; }
+  .slide { position: absolute; inset: 0; overflow: hidden; background: #f8fbfd; }
+  .slide::before { content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 14px; background: var(--cyan); z-index: 8; }
+  .slide.dark { background: linear-gradient(135deg, #083e66, #041f36); color: #fff; }
+  .slide-header { position: absolute; left: 5.2%; right: 5.2%; top: 4.5%; }
+  .slide-header .kicker { font: 700 12px ui-monospace, Menlo, monospace; color: var(--cyan); text-transform: uppercase; letter-spacing: .05em; }
+  .slide-title { margin: 6px 0 4px; font-size: clamp(18px, 2.6vw, 32px); line-height: 1.12; color: var(--ink); }
+  .slide.dark .slide-title { color: #fff; }
+  .slide-subtitle { margin: 0; font-size: clamp(11px, 1.15vw, 14px); color: var(--muted); }
+  .slide-body { position: absolute; left: 5.2%; right: 5.2%; top: 21%; }
+  .footer { position: absolute; left: 5.2%; right: 5.2%; bottom: 3%; display: flex; justify-content: space-between; font: 10px ui-monospace, Menlo, monospace; color: var(--muted); }
+  .standin { position: absolute; inset: 24% 8% 14%; border: 2px dashed rgba(255,255,255,.35); border-radius: 10px; display: grid; place-content: center; text-align: center; gap: 8px; padding: 20px; }
+  .standin b { font-size: 20px; } .standin span { opacity: .8; font-size: 14px; max-width: 60ch; }
+  .bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; margin-top: 10px; font: 13px ui-monospace, Menlo, monospace; }
+  .bar button, .bar a { background: #12324f; color: #eaf6ff; border: 1px solid #2b5a80; border-radius: 6px; padding: 6px 10px; font: inherit; cursor: pointer; text-decoration: none; }
+  .bar button:focus-visible, .bar a:focus-visible { outline: 2px solid var(--amber); }
+  #startCard { position: fixed; inset: 0; display: grid; place-items: center; background: rgba(4, 18, 32, .92); z-index: 50; }
+  #startCard.hidden { display: none; }
+  .start-inner { max-width: 760px; padding: 32px; background: #0b2a45; border: 1px solid #2b5a80; border-radius: 14px; display: grid; gap: 12px; }
+  .start-inner h1 { margin: 0; font-size: 36px; }
+  .notes-kicker { margin: 0; font: 700 12px ui-monospace, Menlo, monospace; color: var(--cyan); text-transform: uppercase; }
+  .start-stats { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+  .start-stat { background: #12324f; border-radius: 8px; padding: 8px; } .start-stat b { display: block; font-size: 20px; } .start-stat span { font-size: 11px; opacity: .8; }
+  .start-actions { display: grid; gap: 10px; }
+  .start-button { padding: 12px; border-radius: 8px; border: 0; background: var(--cyan); color: #04223a; font-weight: 800; cursor: pointer; }
+  .start-button.secondary { background: transparent; color: #eaf6ff; border: 1px solid #2b5a80; }
+  .start-media-note { font-size: 12px; opacity: .7; margin: 0; }
+  .subtitle-overlay { position: absolute; left: 10%; right: 10%; bottom: 9%; z-index: 9; text-align: center; background: rgba(4, 18, 32, .82); color: #fff; font-size: clamp(13px, 1.5vw, 19px); line-height: 1.35; padding: 8px 14px; border-radius: 8px; opacity: 0; transition: opacity .2s; }
+  .subtitle-overlay.visible { opacity: 1; }
+  .subtitle-overlay.caption-disabled { display: none; }
+  #notes { margin-top: 8px; font-size: 13px; line-height: 1.45; color: #cfe6f5; max-height: 18vh; overflow: auto; }
+  #notes .cue { color: var(--amber); font-weight: 700; display: block; }
+</style>
+</head>
+<body>
+<div class="stage">
+  <div id="canvas"></div>
+  <div class="bar">
+    <span><button id="prevBtn" type="button">◀ Previous</button> <button id="nextBtn" type="button">Next ▶</button></span>
+    <span id="slideLabel">Slide 1</span>
+    <span id="timingLabel"></span>
+    <button id="autoplayButton" type="button">Autoplay</button>
+    <span>
+      <a href="?version=B">B</a> <a href="?version=B&c2=recorded">B recorded</a> <a href="?version=A">A</a>
+      <a href="?film=hybrid">hybrid</a> <a href="?film=silent">silent</a> <a href="?film=anime">anime</a>
+      <a href="?voices=live">captions only</a>
+    </span>
+  </div>
+  <div id="notes"></div>
+</div>
+<div id="startCard"><div class="start-inner">
+  <p class="notes-kicker">Preview</p><h1>actsEU</h1><p>Preview</p>
+  <div class="start-stats"></div><div class="start-actions"></div>
+  <p class="start-media-note">Preview only: Checkpoint 1 slides appear as stand-ins (with your recordings and captions when present in media-final/voice/). Press the arrow keys to move between scenes.</p>
+</div></div>
+
+<script>
+// Minimal stand-in for the deck's renderer, so the new scenes can be checked offline.
+const C1 = [
+  ["title", "Capstone final review", "EU Tender Autonomous AI Agent"],
+  ["phases", "01 Scope and planning", "One project, five deliberate development phases."],
+  ["decision", "02 Decision problem", "Tender discovery is easy. A defensible bid decision is not."],
+  ["image", "03 Hybrid architecture", "n8n runs the operation. Python runs the reasoning."],
+  ["image", "04 LangGraph design", "The state machine makes every decision stage explicit."],
+  ["media", "05 Implementation evidence", "The architecture exists as code and as a published repository."],
+  ["agents", "06 Nine stages, nine agents", "Nine bounded roles turn raw listings into an auditable recommendation."],
+  ["media", "07 Intake and early research", "Agents 1 to 5 transform a raw opportunity into grounded evidence."],
+  ["media", "08 Reasoning progression", "The reasoning path advances only when the evidence contract is satisfied."],
+  ["media", "09 Full autonomous operation", "The complete recording demonstrates the system as one connected operation."],
+  ["media", "10 Orchestration evidence", "n8n exposes execution status while live mode confirms the service boundary."],
+  ["media", "11 Trigger and knowledge layer", "The webhook starts the operation; Pinecone supplies controlled retrieval."],
+  ["media", "12 Report publication", "A decision is not complete until the report is published and stored."],
+  ["media", "13 Operational visibility", "Notion organizes the decision radar while Slack distributes updates."],
+  ["media", "14 Delivery receipts", "Cross-channel receipts confirm that reports reached their destinations."],
+  ["problems", "15 Hurdles and problem solving", "Reliability came from explicit contracts, validation, and observable failure paths."],
+  ["image", "16 Cost and token assessment", "The measured development spend was $125.07 across 25.76 million tokens."],
+  ["achievements", "17 Achievements and requirements", "The submission package links every required capability to evidence."],
+  ["closing", "18 Final recommendation", "Checkpoint 1 is complete. Checkpoint 2 turns the prototype into a consulting product."],
+];
+const PACED = [49, 43, 54, 49, 43, 52, 41, 37, 73, 91, 31, 24, 22, 24, 21, 48, 75, 65, 42];
+let t0 = 0;
+const fmt = x => `${Math.floor(x / 60)}:${String(x % 60).padStart(2, "0")}`;
+window.presentationSlides = C1.map(([type, section, title], i) => {
+  const timing = `${fmt(t0)} to ${fmt(t0 + PACED[i])}`; t0 += PACED[i];
+  return { type, section, title, subtitle: "", timing, naturalTiming: timing, cue: "Checkpoint 1 slide: plays from your deck with its recorded narration.", script: [], sources: [] };
+});
+window.presentationSubtitles = {};
+const slides = window.presentationSlides;
+let current = 0, autoplayEnabled = false, presentationStarted = false, presentationPaused = false, captionsVisible = true, activeNarrationMedia = null;
+let autoAdvanceTimer = null, autoAdvanceDeadline = null, autoAdvanceRemainingMs = null, playbackMode = "natural";
+const canvas = document.getElementById("canvas");
+const autoplayButton = document.getElementById("autoplayButton");
+const header = s => `<header class="slide-header"><div class="kicker">${s.section}</div><h1 class="slide-title">${s.title}</h1>${s.subtitle ? `<p class="slide-subtitle">${s.subtitle}</p>` : ""}</header>`;
+const footer = i => `<div class="footer"><span>EU Tender Autonomous AI Agent</span><span>${String(i + 1).padStart(2, "0")}</span></div>`;
+function timingFor(s) { return playbackMode === "natural" ? (s.naturalTiming || s.timing) : s.timing; }
+function timingDuration(t) { const [a, b] = t.split(" to ").map(v => { const [m, s] = v.split(":").map(Number); return m * 60 + s; }); return Math.max(1, b - a); }
+function updateAutoplayUI(label) { autoplayButton.textContent = label || (autoplayEnabled ? "Autoplay on" : "Autoplay paused"); }
+function scheduleAutoAdvance() {
+  clearTimeout(autoAdvanceTimer); autoAdvanceTimer = null;
+  if (!presentationStarted || !autoplayEnabled || presentationPaused) return;
+  autoAdvanceTimer = setTimeout(() => { if (current < slides.length - 1) { current += 1; renderSlide(); } }, timingDuration(timingFor(slides[current])) * 1000);
+}
+function renderSlide() {
+  const s = slides[current];
+  if (activeNarrationMedia) { activeNarrationMedia.pause(); activeNarrationMedia = null; }
+  if (!["film", "team", "cp2", "console"].includes(s.type)) {
+    canvas.innerHTML = `<section class="slide dark">${header(s)}<div class="standin"><b>Checkpoint 1 · ${s.type} slide</b><span>In the real deck this slide shows its visuals and evidence clips.</span></div>${footer(current)}</section>`;
+    if (s.narrationAudio && presentationStarted) { activeNarrationMedia = new Audio(s.narrationAudio.src); activeNarrationMedia.play().catch(() => {}); }
+  }
+  document.getElementById("slideLabel").textContent = `Scene ${current + 1} of ${slides.length}`;
+  document.getElementById("timingLabel").textContent = timingFor(s);
+  document.getElementById("notes").innerHTML = `<span class="cue">${s.cue || ""}</span>${(s.script || []).map(p => `<p>${p}</p>`).join("")}`;
+  scheduleAutoAdvance();
+}
+function startPresentation(mode) { playbackMode = mode; autoplayEnabled = true; presentationStarted = true; document.getElementById("startCard").classList.add("hidden"); updateAutoplayUI(); renderSlide(); }
+function toggleAutoplay() { autoplayEnabled = !autoplayEnabled; updateAutoplayUI(); if (autoplayEnabled) scheduleAutoAdvance(); else { clearTimeout(autoAdvanceTimer); autoAdvanceTimer = null; } }
+const go = d => { const n = current + d; if (n >= 0 && n < slides.length) { current = n; renderSlide(); } };
+document.getElementById("prevBtn").onclick = () => go(-1);
+document.getElementById("nextBtn").onclick = () => go(1);
+autoplayButton.onclick = () => toggleAutoplay();
+document.addEventListener("keydown", e => { if (e.key === "ArrowRight") go(1); if (e.key === "ArrowLeft") go(-1); if (e.key === "c" || e.key === "C") captionsVisible = !captionsVisible; });
+</script>
+<script src="final_presentation.js"></script>
+</body>
+</html>
